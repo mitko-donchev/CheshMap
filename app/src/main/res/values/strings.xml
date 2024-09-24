@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">CheshMap</string>
+    <string name="center_on_user_location">Center on user location</string>
 </resources>
