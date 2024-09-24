@@ -11,12 +11,12 @@ plugins {
 
 android {
     namespace = "com.epicmillennium.cheshmap"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.epicmillennium.cheshmap"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
         setProperty("archivesBaseName", "CheshMap-$versionName")
@@ -79,6 +79,13 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.animation)
     implementation(libs.androidx.foundation)
+
+    // Google maps for Android
+    api(libs.google.play.services.android.maps)  // api means its exposed to the pure-android app (for init)
+    implementation(libs.google.maps.compose)
+    implementation(libs.google.maps.compose.utils)
+    implementation(libs.google.maps.compose.widgets)
+    implementation(libs.google.play.services.android.location)
 
     // Navigation
     implementation(libs.androidx.navigation.runtime.ktx)
