@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- API 34 requirement -->
 
     <application
+        android:name=".app.android.CheshMapApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -20,10 +21,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CheshMap"
-        tools:targetApi="30">
+        tools:targetApi="35">
 
         <activity
-            android:name=".core.MainActivity"
+            android:name=".app.host.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.CheshMap">
             <intent-filter>
