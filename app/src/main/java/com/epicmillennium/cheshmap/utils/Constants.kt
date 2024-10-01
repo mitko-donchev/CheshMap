@@ -2,6 +2,7 @@ package com.epicmillennium.cheshmap.utils
 
 import android.Manifest
 import androidx.compose.runtime.NoLiveLiterals
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 
 object Constants {
@@ -19,6 +20,9 @@ object Constants {
 
     // DataStore
     val GLOBAL_THEME_MODE_KEY = intPreferencesKey("global_theme_mode")
+    val LATEST_LONGITUDE_KEY = doublePreferencesKey("latest_longitude")
+    val LATEST_LATITUDE_KEY = doublePreferencesKey("latest_latitude")
+
 
     @NoLiveLiterals
     fun mapStyleLight(): String {

@@ -1,8 +1,9 @@
 package com.epicmillennium.cheshmap.presentation.ui.components.maps
 
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -20,10 +21,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,32 +34,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
+import com.epicmillennium.cheshmap.presentation.ui.components.onDebounceClick
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleDark
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleLight
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.Marker
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import kotlinx.coroutines.launch
 
 @Composable
-fun GoogleMaps() {
-
+fun GoogleMaps(
+    initialUserLocation: Location,
+    latestUserLocation: Location,
+    fetchLatestUserLocation: () -> Unit
+) {
     val infoMarkerState = rememberMarkerState()
+    val coroutineScope = rememberCoroutineScope()
     val cameraPositionState = rememberCameraPositionState()
 
-    var userLocation = remember { Location(0.0, 0.0) }
-    var shouldSetInitialCameraPosition = remember { CameraPosition() }
-
-    // Information marker - visible after user clicks "find marker" button in details panel
-    var infoMarker by remember { mutableStateOf<Marker?>(null) }
-    var infoMarkerInfoWindowOpenPhase by remember { mutableIntStateOf(0) }
+    val bearing by remember { derivedStateOf { cameraPositionState.position.bearing } }
+    var initialCameraPosition by remember { mutableStateOf(CameraPosition()) }
 
     var isMapLoaded by remember { mutableStateOf(false) }
     var isUserCentered by remember { mutableStateOf(true) }
@@ -66,8 +68,9 @@ fun GoogleMaps() {
     val uiSettings by remember {
         mutableStateOf(
             MapUiSettings(
-                myLocationButtonEnabled = false,
+                compassEnabled = false,
                 zoomControlsEnabled = false,
+                myLocationButtonEnabled = false,
             )
         )
     }
@@ -78,8 +81,8 @@ fun GoogleMaps() {
         mutableStateOf(
             MapProperties(
                 isMyLocationEnabled = true,  // always show the dot
-                minZoomPreference = 1f,
-                maxZoomPreference = 25f,
+                minZoomPreference = 7f,
+                maxZoomPreference = 17f,
                 mapStyleOptions = MapStyleOptions(
                     mapStyle
                 )
@@ -87,53 +90,44 @@ fun GoogleMaps() {
         )
     }
 
+    suspend fun pointMapToNorth() {
+        // Get the current camera position
+        val currentPosition = cameraPositionState.position
+
+        // Create a new CameraPosition with the updated bearing
+        val newCameraPosition = com.google.android.gms.maps.model.CameraPosition.Builder()
+            .target(currentPosition.target) // Keep the current target (lat/lng)
+            .zoom(currentPosition.zoom) // Keep the current zoom level
+            .tilt(currentPosition.tilt) // Keep the current tilt
+            .bearing(0f) // Set the bearing to 0f a.k.a north
+            .build()
+
+        cameraPositionState.animate(
+            CameraUpdateFactory.newCameraPosition(newCameraPosition), 500
+        )
+    }
+
     // Handle Light/Dark mode
     LaunchedEffect(LocalTheme.current.isDark) {
-        properties = MapProperties(
-            isMyLocationEnabled = true,  // always show the dot
-            minZoomPreference = 7f,
-            maxZoomPreference = 17f,
+        properties = properties.copy(
             mapStyleOptions = MapStyleOptions(
                 mapStyle
             )
         )
     }
 
-    // 1) Update user GPS location - will be moved from here
     LaunchedEffect(Unit) {
-        userLocation = Location(latitude = 43.1421722, longitude = 24.7320678)
-//        while (true) {
-//            val commonGpsLocationService = GPSService()
-//            commonGpsLocationService.onUpdatedGPSLocation(
-//                errorCallback = { errorMessage ->
-//                    Log.e(this.toString(), "Error: $errorMessage")
-//                },
-//                locationCallback = { updatedLocation ->
-//                    updatedLocation?.let { location ->
-//                        userLocation = location
-//                    } ?: run {
-//                        Log.e(this.toString(), "Unable to get current location - 1")
-//                    }
-//                })
-//            delay(2.seconds)
-//        }
-    }
-
-    // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
-    LaunchedEffect(Unit) {
-        if (userLocation.isLocationValid()) {
-            shouldSetInitialCameraPosition = CameraPosition(
+        if (initialUserLocation.isLocationValid()) {
+            initialCameraPosition = CameraPosition(
                 target = LatLong(
-                    userLocation.latitude,
-                    userLocation.longitude
+                    initialUserLocation.latitude,
+                    initialUserLocation.longitude
                 ),
-                zoom = 4f  // note: forced zoom level
+                zoom = 16f  // note: forced zoom level
             )
         }
 
-        shouldSetInitialCameraPosition.let { cameraPosition ->
-            userLocation = Location(cameraPosition.target.latitude, cameraPosition.target.longitude)
-
+        initialCameraPosition.let { cameraPosition ->
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
@@ -141,39 +135,39 @@ fun GoogleMaps() {
                         cameraPosition.target.longitude
                     ),
                     cameraPosition.zoom
-                    // cameraPositionState.position.zoom // allows users to zoom in and out while maintaining the same center, why does this work?
                 )
             )
         }
     }
 
-    // Set Camera to User Location (ie: Tracking) (Allows user to control zoom level)
-    LaunchedEffect(userLocation) {
-        if (userLocation.isLocationValid()) {
-            shouldSetInitialCameraPosition = CameraPosition(
+    // Animate camera to user location on each location update
+    LaunchedEffect(latestUserLocation) {
+        if (latestUserLocation.isLocationValid()) {
+            initialCameraPosition = CameraPosition(
                 target = LatLong(
-                    userLocation.latitude,
-                    userLocation.longitude
+                    latestUserLocation.latitude,
+                    latestUserLocation.longitude
                 ),
-                zoom = 14f  // note: forced zoom level
+                zoom = 16f  // note: forced zoom level
             )
         }
 
-        shouldSetInitialCameraPosition.let { cameraPosition ->
-            cameraPositionState.move(
+        initialCameraPosition.let { cameraPosition ->
+            cameraPositionState.animate(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
                         cameraPosition.target.latitude,
                         cameraPosition.target.longitude
                     ),
                     cameraPosition.zoom
-                    // cameraPositionState.position.zoom // allows users to zoom in and out while maintaining the same center, why does this work?
-                )
+                ),
+                500
             )
         }
+        isUserCentered = true
     }
 
-    // Tack camera position changes
+    // Track camera position changes
     LaunchedEffect(cameraPositionState.isMoving) {
         if (cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) {
             isUserCentered = false
@@ -191,12 +185,6 @@ fun GoogleMaps() {
             },
             onMapClick = {
                 infoMarkerState.hideInfoWindow()
-                infoMarker = null
-            },
-            googleMapOptionsFactory = {
-                GoogleMapOptions().apply {
-                    this.backgroundColor(0x000000)
-                }
             }
         )
 
@@ -216,46 +204,49 @@ fun GoogleMaps() {
             }
         }
 
-        MapButton(
-            stringResource(R.string.center_on_user_location),
-            onClick = {
-                shouldSetInitialCameraPosition.let { cameraPosition ->
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(
-                            LatLng(
-                                cameraPosition.target.latitude,
-                                cameraPosition.target.longitude
-                            ),
-                            cameraPosition.zoom
-                            // cameraPositionState.position.zoom // allows users to zoom in and out while maintaining the same center, why does this work?
-                        )
-                    )
+        AnimatedVisibility(
+            visible = bearing != 0f,
+            modifier = Modifier.align(Alignment.TopEnd),
+            enter = fadeIn(),
+            exit = fadeOut(animationSpec = tween(durationMillis = 500, delayMillis = 1500))
+        ) {
+            // Custom Compass overlay
+            Compass(
+                bearing = bearing,
+                onCompassClick = {
+                    coroutineScope.launch {
+                        pointMapToNorth()
+                    }
                 }
-                isUserCentered = true
-            },
-            isUserCentered,
-            modifier = Modifier.align(Alignment.BottomEnd)
-        )
+            )
+        }
+
+        MapButton(
+            onClick = { if (!isUserCentered) fetchLatestUserLocation() },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(14.dp)
+                .size(50.dp)
+        ) {
+            Icon(
+                imageVector = if (isUserCentered) Icons.Default.NearMe else Icons.Outlined.NearMe,
+                contentDescription = stringResource(R.string.center_on_user_location)
+            )
+        }
     }
 }
 
 @Composable
 private fun MapButton(
-    text: String,
     onClick: () -> Unit,
-    isUserCentered: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    icon: @Composable () -> Unit
 ) {
     FilledIconButton(
-        modifier = modifier
-            .padding(16.dp)
-            .size(50.dp),
+        modifier = modifier,
         shape = CircleShape,
-        onClick = onClick
+        onClick = onDebounceClick { onClick() }
     ) {
-        Icon(
-            imageVector = if (isUserCentered) Icons.Default.NearMe else Icons.Outlined.NearMe,
-            contentDescription = text
-        )
+        icon.invoke()
     }
 }
