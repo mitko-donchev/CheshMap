@@ -5,6 +5,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,7 +30,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.epicmillennium.cheshmap.R
@@ -44,6 +48,8 @@ import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.MarkerComposable
+import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.launch
@@ -69,6 +75,7 @@ fun GoogleMaps(
         mutableStateOf(
             MapUiSettings(
                 compassEnabled = false,
+                mapToolbarEnabled = false,
                 zoomControlsEnabled = false,
                 myLocationButtonEnabled = false,
             )
@@ -185,8 +192,33 @@ fun GoogleMaps(
             },
             onMapClick = {
                 infoMarkerState.hideInfoWindow()
+            },
+        ) {
+            MarkerComposable(
+                state = remember {
+                    MarkerState(
+                        position = LatLng(
+                            43.128121,
+                            24.763269
+                        )
+                    )
+                }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.Blue, CircleShape)
+                        .padding(14.dp)
+                        .size(24.dp),
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_fountain),
+                        contentDescription = stringResource(R.string.water_fountain),
+                        contentScale = ContentScale.FillBounds,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
-        )
+        }
 
         if (!isMapLoaded) {
             AnimatedVisibility(

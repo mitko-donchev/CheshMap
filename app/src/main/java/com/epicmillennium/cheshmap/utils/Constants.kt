@@ -29,6 +29,15 @@ object Constants {
         return """
 [
   {
+    "elementType": "labels",
+    "featureType": "poi",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
     "featureType": "poi.sports_complex",
     "elementType": "all",
     "stylers": [
@@ -62,7 +71,16 @@ object Constants {
     @NoLiveLiterals
     fun mapStyleDark(): String {
         return """
-     [
+[
+  {
+    "elementType": "labels",
+    "featureType": "poi",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
   {
     "featureType": "poi.sports_complex",
     "elementType": "all",

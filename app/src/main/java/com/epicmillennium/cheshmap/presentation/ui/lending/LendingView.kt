@@ -1,7 +1,6 @@
 package com.epicmillennium.cheshmap.presentation.ui.lending
 
 
-import android.Manifest
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,7 +26,6 @@ import com.epicmillennium.cheshmap.utils.Constants.LOCATION_PERMISSIONS
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -37,35 +35,20 @@ fun LendingView(
     fetchLatestUserData: () -> Job,
     fetchUserLocation: () -> Job
 ) {
-
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
-    var allPermissionsProvided: Boolean by remember { mutableStateOf(false) }
-
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        val multiplePermission = rememberMultiplePermissionsState(LOCATION_PERMISSIONS) {
-            coroutineScope.launch {
-                if (it[Manifest.permission.ACCESS_FINE_LOCATION] == true && it[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
-                    allPermissionsProvided = true
-                } else {
-                    // Handle permission denied and show button
-                }
-            }
-        }
+        val multiplePermission = rememberMultiplePermissionsState(LOCATION_PERMISSIONS)
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(multiplePermission.allPermissionsGranted) {
             if (multiplePermission.allPermissionsGranted) {
                 if (!latestUserLocation.isLocationValid()) fetchLatestUserData()
-                allPermissionsProvided = true
             } else {
                 multiplePermission.launchMultiplePermissionRequest()
             }
         }
 
-        AnimatedVisibility(visible = allPermissionsProvided) {
+        AnimatedVisibility(visible = multiplePermission.allPermissionsGranted) {
             when (uiState.contentState) {
                 is LendingViewContentState.Loading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
