@@ -1,7 +1,34 @@
 <resources>
+
+    <!-- Main strings -->
     <string name="app_name">CheshMap</string>
+
+    <!-- Buttons -->
+    <string name="take_me_there">Take me there</string>
+
+    <!-- Water source statuses -->
+    <string name="working">Working</string>
+    <string name="under_construction">Under construction</string>
+    <string name="out_of_order">Out of order</string>
+    <string name="for_review">For review</string>
+
+    <!-- Water source types -->
+    <string name="establishment">Establishment</string>
+    <string name="urban_water_source">Urban water source</string>
+    <string name="hot_mineral_water">Hot mineral water</string>
+    <string name="mineral_water">Mineral water</string>
+    <string name="spring_water">Spring water</string>
+
+    <!-- Water source other -->
+    <string name="type">Type: %1$s</string>
+    <string name="status">Status: %1$s</string>
+    <string name="details">Details</string>
+    <string name="full_details">Details: %1$s</string>
+    <string name="coordinates">Coordinates: %1$s, %2$s</string>
+
+    <!-- Content Description -->
+    <string name="compass">Compass</string>
+    <string name="water_source_image">Water source image</string>
     <string name="center_on_user_location">Center on user location</string>
-    <string name="map_compass">Map compass</string>
-    <string name="compass">compass</string>
-    <string name="water_fountain">water fountain</string>
+
 </resources>

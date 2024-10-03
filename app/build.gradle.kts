@@ -114,6 +114,11 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.datastore.preferences.core)
 
+    // Firebase
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.firestore)
+    implementation(platform(libs.firebase.bom))
+
     // Gson
     implementation(libs.gson)
 

@@ -1,5 +1,5 @@
 package com.epicmillennium.cheshmap.domain.marker
 
-data class WaterSourceMarkerPhoto(
+data class WaterSourcePhoto(
     val imageUrl: String = "",
 )

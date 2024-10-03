@@ -18,6 +18,9 @@ object Constants {
         Manifest.permission.RECORD_AUDIO,
     )
 
+    // Firebase
+    val FIRESTORE_COLLECTION_WATER_SOURCES = "water_sources"
+
     // DataStore
     val GLOBAL_THEME_MODE_KEY = intPreferencesKey("global_theme_mode")
     val LATEST_LONGITUDE_KEY = doublePreferencesKey("latest_longitude")

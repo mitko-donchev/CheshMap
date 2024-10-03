@@ -1,4 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Main strings -->
     <string name="app_name">Чешмите в България</string>
+
+    <!-- Buttons -->
+    <string name="take_me_there">Заведи ме там</string>
+
+    <!-- Water source statuses -->
+    <string name="working">Работи</string>
+    <string name="under_construction">Ремонтира се</string>
+    <string name="out_of_order">Не работи</string>
+    <string name="for_review">За ревю</string>
+
+    <!-- Water source types -->
+    <string name="establishment">Заведение</string>
+    <string name="urban_water_source">ВИК</string>
+    <string name="hot_mineral_water">Гореща минерална вода</string>
+    <string name="mineral_water">Минерална вода</string>
+    <string name="spring_water">Изворна вода</string>
+
+    <!-- Water source other -->
+    <string name="type">Тип: %1$s</string>
+    <string name="details">Детайли</string>
+    <string name="full_details">Детайли: %1$s</string>
+    <string name="status">Състояние: %1$s</string>
+    <string name="coordinates">Координати: %1$s, %2$s</string>
+
+    <!-- Content Description -->
+    <string name="compass">Kомпас</string>
+    <string name="water_source_image">Изображение на водоизточникa</string>
+    <string name="center_on_user_location">Центрирай върху местоположението на потребителя</string>
+
 </resources>

@@ -10,15 +10,11 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.GoogleMaps
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.isLocationValid
@@ -32,6 +28,7 @@ import kotlinx.coroutines.Job
 fun LendingView(
     uiState: LendingViewState,
     latestUserLocation: Location,
+    waterSourceMarkers: List<WaterSource>,
     fetchLatestUserData: () -> Job,
     fetchUserLocation: () -> Job
 ) {
@@ -62,6 +59,7 @@ fun LendingView(
                     GoogleMaps(
                         uiState.contentState.userState.lastKnownLocation,
                         latestUserLocation,
+                        waterSourceMarkers,
                         fetchLatestUserLocation = { fetchUserLocation() }
                     )
                 }

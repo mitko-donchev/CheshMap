@@ -12,10 +12,12 @@ fun LendingScreen() {
 
     val lendingUiState by lendingViewModel.lendingUiState.collectAsStateWithLifecycle()
     val latestUserLocation by lendingViewModel.userLocation.collectAsStateWithLifecycle()
+    val waterSourceMarkers by lendingViewModel.waterSourceMarkers.collectAsStateWithLifecycle()
 
     LendingView(
         uiState = lendingUiState,
         latestUserLocation = latestUserLocation,
+        waterSourceMarkers = waterSourceMarkers,
         lendingViewModel::fetchLatestUserData,
         lendingViewModel::fetchUserLocation
     )
