@@ -1,0 +1,10 @@
+package com.epicmillennium.cheshmap.domain.usecase
+
+import com.epicmillennium.cheshmap.domain.marker.WaterSourcesRepository
+
+class DeleteWaterSourceByIdUseCase(private val waterSourcesRepository: WaterSourcesRepository) {
+    suspend operator fun invoke(id: String): Result<Boolean> = Result.runCatching {
+        waterSourcesRepository.deleteWaterSourceById(id)
+        true
+    }
+}

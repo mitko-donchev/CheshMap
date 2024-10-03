@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -23,9 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -34,14 +31,15 @@ import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceStatus
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
+import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.MarkerInfoWindow
 import com.google.maps.android.compose.MarkerState
 
 @Composable
-fun WaterSourceMarker(waterSource: WaterSource) {
-    val context = LocalContext.current
+fun WaterSourceMarker(navigationActions: AppNavigationActions, waterSource: WaterSource) {
+
     val latLng = LatLng(waterSource.latitude, waterSource.longitude)
 
     val waterSourceStatus = stringResource(
@@ -67,6 +65,7 @@ fun WaterSourceMarker(waterSource: WaterSource) {
         state = remember { MarkerState(position = latLng) },
         icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_water_source_marker),
         onInfoWindowClick = {
+            navigationActions.navigateToWaterSourceDetails(waterSource.id)
 //            // open Google Maps
 //            val gmmIntentUri =
 //                "http://maps.google.com/maps?q=loc:" + waterSource.latitude + "," + waterSource.longitude
@@ -101,7 +100,7 @@ fun WaterSourceMarker(waterSource: WaterSource) {
                         ),
                         contentDescription = stringResource(R.string.water_source_image),
                         modifier = Modifier
-                            .size(192.dp)
+                            .size(224.dp)
                             .clip(RoundedCornerShape(8.dp)),
                         contentScale = ContentScale.Fit
                     )
@@ -130,8 +129,6 @@ fun WaterSourceMarker(waterSource: WaterSource) {
                     text = stringResource(R.string.status, waterSourceStatus),
                     style = MaterialTheme.typography.bodyMedium,
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
 
                 // Not sure we need a button for UX
 //                Button(

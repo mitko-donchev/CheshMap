@@ -18,6 +18,7 @@ import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.GoogleMaps
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.isLocationValid
+import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 import com.epicmillennium.cheshmap.utils.Constants.LOCATION_PERMISSIONS
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -26,6 +27,7 @@ import kotlinx.coroutines.Job
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LendingView(
+    navigationActions: AppNavigationActions,
     uiState: LendingViewState,
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
@@ -57,6 +59,7 @@ fun LendingView(
 
                 is LendingViewContentState.Success -> {
                     GoogleMaps(
+                        navigationActions,
                         uiState.contentState.userState.lastKnownLocation,
                         latestUserLocation,
                         waterSourceMarkers,

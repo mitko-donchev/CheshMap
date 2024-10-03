@@ -7,5 +7,6 @@ plugins {
     alias(libs.plugins.dagger.hilt.android) apply false
     alias(libs.plugins.secrets.gradle.plugin) apply false
     alias(libs.plugins.jetbrains.kotlin.android) apply false
+    alias(libs.plugins.jetbrains.kotlin.percelize) apply false
     alias(libs.plugins.jetbrains.kotlin.serialization) apply false
 }

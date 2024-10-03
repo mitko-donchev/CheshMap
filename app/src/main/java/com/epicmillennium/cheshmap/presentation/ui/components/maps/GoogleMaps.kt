@@ -36,6 +36,7 @@ import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.presentation.ui.components.onDebounceClick
+import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleDark
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleLight
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -51,6 +52,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun GoogleMaps(
+    navigationActions: AppNavigationActions,
     initialUserLocation: Location,
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
@@ -113,9 +115,7 @@ fun GoogleMaps(
     // Handle Light/Dark mode
     LaunchedEffect(LocalTheme.current.isDark) {
         properties = properties.copy(
-            mapStyleOptions = MapStyleOptions(
-                mapStyle
-            )
+            mapStyleOptions = MapStyleOptions(mapStyle)
         )
     }
 
@@ -191,7 +191,7 @@ fun GoogleMaps(
             },
         ) {
             waterSourceMarkers.forEach {
-                WaterSourceMarker(it)
+                WaterSourceMarker(navigationActions, it)
             }
         }
 
