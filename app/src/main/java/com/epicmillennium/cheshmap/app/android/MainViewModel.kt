@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.epicmillennium.cheshmap.core.ui.theme.AppThemeMode
 import com.epicmillennium.cheshmap.utils.Constants.GLOBAL_THEME_MODE_KEY
+import com.epicmillennium.cheshmap.utils.WaterSourcesRetrieverWorkerUtils
 import com.epicmillennium.cheshmap.utils.preferences.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    waterSourcesRetrieverWorkerUtils: WaterSourcesRetrieverWorkerUtils,
     private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
@@ -23,6 +25,7 @@ class MainViewModel @Inject constructor(
 
     init {
         fetchGlobalThemeMode()
+        waterSourcesRetrieverWorkerUtils.retrieveWaterSources()
     }
 
     private fun fetchGlobalThemeMode() = viewModelScope.launch {

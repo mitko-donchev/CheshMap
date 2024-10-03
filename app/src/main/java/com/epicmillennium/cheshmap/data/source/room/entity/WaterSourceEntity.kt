@@ -1,6 +1,7 @@
 package com.epicmillennium.cheshmap.data.source.room.entity
 
 import android.os.Parcelable
+import android.util.Log
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
@@ -24,6 +25,7 @@ data class WaterSourceEntity(
 ) : Parcelable {
     companion object {
         fun fromWaterSource(waterSource: WaterSource): WaterSourceEntity {
+            Log.d("WaterSourceEntity", "Mapping WaterSource with ID: ${waterSource.id}")
             return WaterSourceEntity(
                 waterSource.id,
                 waterSource.name,
