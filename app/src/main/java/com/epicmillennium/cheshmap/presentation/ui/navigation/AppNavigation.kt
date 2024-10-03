@@ -1,7 +1,6 @@
 package com.epicmillennium.cheshmap.presentation.ui.navigation
 
 import androidx.navigation.NavHostController
-import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -24,9 +23,8 @@ class AppNavigationActions(private val navController: NavHostController) {
         popUpTo(LendingScreen) { inclusive = true }
     }
 
-    fun navigateToWaterSourceDetails(waterSourceId: String)= navController.navigate(DetailsScreen(waterSourceId)) {
-        popUpTo(LendingScreen) { inclusive = true }
-    }
+    fun navigateToWaterSourceDetails(waterSourceId: String) =
+        navController.navigate(DetailsScreen(waterSourceId))
 }
 
 @Serializable

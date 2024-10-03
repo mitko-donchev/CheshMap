@@ -4,14 +4,10 @@ import android.util.Log
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.epicmillennium.cheshmap.domain.marker.FirestoreWaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
+import com.epicmillennium.cheshmap.domain.usecase.GetAllWaterSourcesUseCase
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.GPSService
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
-import com.epicmillennium.cheshmap.utils.Constants.FIRESTORE_COLLECTION_WATER_SOURCES
-import com.epicmillennium.cheshmap.utils.preferences.UserPreferencesRepository
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.dataObjects
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,8 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LendingViewModel @Inject constructor(
     private val gpsService: GPSService,
-    private val firebaseFirestore: FirebaseFirestore,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val getAllWaterSourcesUseCase: GetAllWaterSourcesUseCase,
 ) : ViewModel() {
 
     private val _lendingUiState =
@@ -88,17 +83,14 @@ class LendingViewModel @Inject constructor(
     private fun loadWaterSourceMarkers() = viewModelScope.launch(Dispatchers.IO) {
         Log.v("Heavy methods logs", "Fetching latest water sources")
 
-        firebaseFirestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
-            .dataObjects<FirestoreWaterSource>()
-            .collectLatest {
-                Log.v("Heavy methods logs", "Water sources fetched")
-
-                val waterSources = it.map { firestoreWaterSource ->
-                    WaterSource.fromFirestoreWaterSource(firestoreWaterSource)
-                }
-
-                _waterSourceMarkers.tryEmit(waterSources)
+        getAllWaterSourcesUseCase().fold({ waterSources ->
+            waterSources.collectLatest {
+                _waterSourceMarkers.emit(it)
             }
+        }, { error ->
+            Log.e("Heavy methods logs", "Failed to get water sources: ${error.message}")
+            // Handle error and retry
+        })
     }
 }
 

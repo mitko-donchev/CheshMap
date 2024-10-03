@@ -23,7 +23,6 @@ private const val USER_PREFERENCES = "user_preferences"
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
-
     @Singleton
     @Provides
     fun providePreferencesDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {

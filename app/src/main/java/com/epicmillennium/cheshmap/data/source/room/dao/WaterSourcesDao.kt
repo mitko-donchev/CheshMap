@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WaterSourcesDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertAll(notes: List<WaterSourceEntity>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll(waterSources: List<WaterSourceEntity>)
 
     @Query("SELECT * FROM water_sources")
     fun getAll(): Flow<List<WaterSourceEntity>>
