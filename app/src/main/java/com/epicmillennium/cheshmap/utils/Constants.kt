@@ -2,7 +2,7 @@ package com.epicmillennium.cheshmap.utils
 
 import android.Manifest
 import androidx.compose.runtime.NoLiveLiterals
-import androidx.datastore.preferences.core.doublePreferencesKey
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 
 object Constants {
@@ -19,13 +19,14 @@ object Constants {
     )
 
     // Firebase
-    val FIRESTORE_COLLECTION_WATER_SOURCES = "water_sources"
+    const val FIRESTORE_COLLECTION_WATER_SOURCES = "water_sources"
+    const val FIRESTORE_COLLECTION_SERVER_DATA = "server_data"
 
     // DataStore
     val GLOBAL_THEME_MODE_KEY = intPreferencesKey("global_theme_mode")
-    val LATEST_LONGITUDE_KEY = doublePreferencesKey("latest_longitude")
-    val LATEST_LATITUDE_KEY = doublePreferencesKey("latest_latitude")
-
+    val DID_FETCH_DATA_ONCE = booleanPreferencesKey("did_fetch_data_once")
+    val DID_FETCH_DATA_ONCE_AFTER_SERVER_TRUE =
+        booleanPreferencesKey("did_fetch_data_once_after_server_true")
 
     @NoLiveLiterals
     fun mapStyleLight(): String {

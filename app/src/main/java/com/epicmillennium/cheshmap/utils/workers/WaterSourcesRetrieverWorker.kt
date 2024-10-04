@@ -18,14 +18,14 @@ import kotlinx.coroutines.tasks.await
 class WaterSourcesRetrieverWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val firebaseFirestore: FirebaseFirestore,
+    private val firestore: FirebaseFirestore,
     private val addAllWaterSourcesUseCase: AddAllWaterSourcesUseCase
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
         return try {
             // Fetch data from Firestore synchronously (await)
-            val data = firebaseFirestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
+            val data = firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
                 .get()
                 .await() // Use await to suspend and wait for the result
 
@@ -43,6 +43,7 @@ class WaterSourcesRetrieverWorker @AssistedInject constructor(
             if (waterSources.isNotEmpty()) {
                 addAllWaterSourcesUseCase.invoke(waterSources)
                     .onSuccess {
+                        Log.d("WaterSourcesRetrieverWorker", "Water sources fetched successfully")
                         return Result.success()
                     }
                     .onFailure { exception ->
