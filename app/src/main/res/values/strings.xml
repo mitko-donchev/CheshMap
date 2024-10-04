@@ -20,14 +20,16 @@
     <string name="spring_water">Spring water</string>
 
     <!-- Water source other -->
-    <string name="type">Type: %1$s</string>
-    <string name="status">Status: %1$s</string>
+    <string name="type">Type</string>
+    <string name="status">Status</string>
+    <string name="type_with_columns">Type: %1$s</string>
+    <string name="status_with_columns">Status: %1$s</string>
     <string name="details">Details</string>
-    <string name="full_details">Details: %1$s</string>
     <string name="coordinates">Coordinates: %1$s, %2$s</string>
 
     <!-- Content Description -->
     <string name="compass">Compass</string>
+    <string name="navigate_back">Navigate back</string>
     <string name="water_source_image">Water source image</string>
     <string name="center_on_user_location">Center on user location</string>
 

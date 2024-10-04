@@ -83,6 +83,7 @@ class LendingViewModel @Inject constructor(
     private fun loadWaterSourceMarkers() = viewModelScope.launch(Dispatchers.IO) {
         Log.v("Heavy methods logs", "Fetching latest water sources")
 
+        // TODO - filter in review sources
         getAllWaterSourcesUseCase().fold({ waterSources ->
             waterSources.collectLatest {
                 _waterSourceMarkers.emit(it)

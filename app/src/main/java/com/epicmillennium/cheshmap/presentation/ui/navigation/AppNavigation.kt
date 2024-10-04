@@ -12,9 +12,6 @@ object LendingScreen
 @Serializable
 object AccountScreen
 
-@Serializable
-data class DetailsScreen(val waterSourceId: String)
-
 /**
  * Models the navigation actions in the app.
  */
@@ -22,9 +19,6 @@ class AppNavigationActions(private val navController: NavHostController) {
     fun navigateToLending() = navController.navigate(LendingScreen) {
         popUpTo(LendingScreen) { inclusive = true }
     }
-
-    fun navigateToWaterSourceDetails(waterSourceId: String) =
-        navController.navigate(DetailsScreen(waterSourceId))
 }
 
 @Serializable

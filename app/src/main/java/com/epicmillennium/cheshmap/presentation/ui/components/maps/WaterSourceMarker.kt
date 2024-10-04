@@ -1,6 +1,5 @@
 package com.epicmillennium.cheshmap.presentation.ui.components.maps
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,22 +22,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceStatus
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
-import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.MarkerInfoWindow
 import com.google.maps.android.compose.MarkerState
 
 @Composable
-fun WaterSourceMarker(navigationActions: AppNavigationActions, waterSource: WaterSource) {
+fun WaterSourceMarker(
+    waterSource: WaterSource,
+    onMarkerInfoWindowsClicked: (WaterSource) -> Unit
+) {
 
     val latLng = LatLng(waterSource.latitude, waterSource.longitude)
 
@@ -65,12 +69,7 @@ fun WaterSourceMarker(navigationActions: AppNavigationActions, waterSource: Wate
         state = remember { MarkerState(position = latLng) },
         icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_water_source_marker),
         onInfoWindowClick = {
-            navigationActions.navigateToWaterSourceDetails(waterSource.id)
-//            // open Google Maps
-//            val gmmIntentUri =
-//                "http://maps.google.com/maps?q=loc:" + waterSource.latitude + "," + waterSource.longitude
-//            val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(gmmIntentUri))
-//            context.startActivity(mapIntent)
+            onMarkerInfoWindowsClicked.invoke(waterSource)
         },
     ) {
         // Custom MarkerInfoWindow content
@@ -88,23 +87,27 @@ fun WaterSourceMarker(navigationActions: AppNavigationActions, waterSource: Wate
                     .wrapContentHeight()
             ) {
                 // Image of the water source
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            model = waterSource.photos.ifEmpty { "" },
-                            placeholder = painterResource(id = R.drawable.no_image),
-                            error = painterResource(id = R.drawable.no_image)
-                        ),
-                        contentDescription = stringResource(R.string.water_source_image),
-                        modifier = Modifier
-                            .size(224.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.Fit
-                    )
-                }
+                // Will comment out for now as I don't know how expensive it would be to load the images from the cloud every time
+                // Also, there is an issue with https://github.com/coil-kt/coil/issues/159
+                // TODO - check if we can afford loading images even here
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//                    AsyncImage(
+//                        model = ImageRequest.Builder(LocalContext.current)
+//                            .data(if (waterSource.photos.isEmpty()) "" else waterSource.photos[0].imageUrl)
+//                            .allowHardware(false)
+//                            .build(),
+//                        placeholder = painterResource(id = R.drawable.no_image),
+//                        error = painterResource(id = R.drawable.no_image),
+//                        contentDescription = stringResource(R.string.water_source_image),
+//                        modifier = Modifier
+//                            .size(224.dp)
+//                            .clip(RoundedCornerShape(8.dp)),
+//                        contentScale = ContentScale.Fit
+//                    )
+//                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -121,21 +124,14 @@ fun WaterSourceMarker(navigationActions: AppNavigationActions, waterSource: Wate
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = stringResource(R.string.type, waterSourceType),
+                    text = stringResource(R.string.type_with_columns, waterSourceType),
                     style = MaterialTheme.typography.bodyMedium,
                 )
 
                 Text(
-                    text = stringResource(R.string.status, waterSourceStatus),
+                    text = stringResource(R.string.status_with_columns, waterSourceStatus),
                     style = MaterialTheme.typography.bodyMedium,
                 )
-
-                // Not sure we need a button for UX
-//                Button(
-//                    onClick = {},
-//                ) {
-//                    Text(text = stringResource(R.string.details))
-//                }
             }
         }
     }

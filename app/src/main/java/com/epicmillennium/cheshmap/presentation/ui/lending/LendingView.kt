@@ -6,14 +6,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.epicmillennium.cheshmap.core.ui.theme.CheshMapTheme
+import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
+import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.GoogleMaps
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
@@ -58,13 +63,19 @@ fun LendingView(
                 }
 
                 is LendingViewContentState.Success -> {
-                    GoogleMaps(
-                        navigationActions,
-                        uiState.contentState.userState.lastKnownLocation,
-                        latestUserLocation,
-                        waterSourceMarkers,
-                        fetchLatestUserLocation = { fetchUserLocation() }
-                    )
+                    CompositionLocalProvider(value = LocalTheme provides DarkTheme(LocalTheme.current.isDark)) {
+                        CheshMapTheme(darkTheme = LocalTheme.current.isDark) {
+                            Scaffold(modifier = Modifier.fillMaxSize()) {
+                                GoogleMaps(
+                                    navigationActions,
+                                    uiState.contentState.userState.lastKnownLocation,
+                                    latestUserLocation,
+                                    waterSourceMarkers,
+                                    fetchLatestUserLocation = { fetchUserLocation() }
+                                )
+                            }
+                        }
+                    }
                 }
 
                 is LendingViewContentState.Error -> {

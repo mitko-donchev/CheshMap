@@ -21,10 +21,11 @@
     <string name="spring_water">Изворна вода</string>
 
     <!-- Water source other -->
-    <string name="type">Тип: %1$s</string>
+    <string name="type">Тип</string>
+    <string name="status">Състояние</string>
     <string name="details">Детайли</string>
-    <string name="full_details">Детайли: %1$s</string>
-    <string name="status">Състояние: %1$s</string>
+    <string name="type_with_columns">Тип: %1$s</string>
+    <string name="status_with_columns">Състояние: %1$s</string>
     <string name="coordinates">Координати: %1$s, %2$s</string>
 
     <!-- Content Description -->

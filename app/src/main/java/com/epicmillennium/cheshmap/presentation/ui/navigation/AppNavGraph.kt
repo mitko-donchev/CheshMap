@@ -6,9 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.epicmillennium.cheshmap.presentation.ui.account.AccountScreen
-import com.epicmillennium.cheshmap.presentation.ui.details.DetailsScreen
 import com.epicmillennium.cheshmap.presentation.ui.favourite.FavouriteScreen
 import com.epicmillennium.cheshmap.presentation.ui.lending.LendingScreen
 
@@ -27,10 +25,6 @@ fun AppNavGraph(
         }
         composable<AccountScreen> {
             AccountScreen()
-        }
-        composable<DetailsScreen> {
-            val args = it.toRoute<DetailsScreen>()
-            DetailsScreen(args.waterSourceId)
         }
     }
 }
