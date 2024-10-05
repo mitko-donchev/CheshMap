@@ -84,8 +84,5 @@ class WaterSourcesRetrieverWorker @AssistedInject constructor(
     }
 
     private suspend fun getFavouriteWaterSources(): Set<String> =
-        userPreferencesRepository.dataStore.data.map {
-            it[FAVOURITE_SOURCES] ?: emptySet<String>()
-        }.first()
-
+        userPreferencesRepository.dataStore.data.map { it[FAVOURITE_SOURCES] ?: emptySet() }.first()
 }

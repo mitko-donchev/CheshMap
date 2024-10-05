@@ -1,5 +1,6 @@
 package com.epicmillennium.cheshmap.presentation.ui.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,15 +11,11 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,45 +39,47 @@ fun FavouriteWaterSourceItem(
     waterSource: WaterSource,
     onFavouriteIconClick: (Boolean) -> Unit
 ) {
-    Row(
+    Card(
         modifier = modifier
             .wrapContentHeight()
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        var favouriteState by remember { mutableStateOf(waterSource.isFavourite) }
-
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(if (waterSource.photos.isEmpty()) "" else waterSource.photos[0].imageUrl)
-                .allowHardware(false)
-                .build(),
-            placeholder = painterResource(id = R.drawable.no_image),
-            error = painterResource(id = R.drawable.no_image),
-            contentDescription = stringResource(R.string.water_source_image),
+        Box(
             modifier = Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Fit
-        )
-
-        Text(text = waterSource.name)
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        IconToggleButton(checked = favouriteState,
-            onCheckedChange = {
-                favouriteState = it
-                onFavouriteIconClick.invoke(it)
-            }
+                .fillMaxWidth()
+                .padding(8.dp),
         ) {
-            if (favouriteState) {
-                Icon(Icons.Default.Favorite, contentDescription = "Favourite water source button")
-            } else {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(if (waterSource.photos.isEmpty()) "" else waterSource.photos[0].imageUrl)
+                        .allowHardware(false)
+                        .build(),
+                    placeholder = painterResource(id = R.drawable.no_image),
+                    error = painterResource(id = R.drawable.no_image),
+                    contentDescription = stringResource(R.string.water_source_image),
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Fit
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Text(text = waterSource.name)
+            }
+
+            IconToggleButton(
+                checked = true,
+                onCheckedChange = { onFavouriteIconClick.invoke(it) },
+                modifier = Modifier.align(Alignment.CenterEnd)
+            ) {
                 Icon(
-                    Icons.Default.FavoriteBorder,
-                    contentDescription = "Un-favourite water source button"
+                    Icons.Default.Favorite,
+                    contentDescription = "Favourite water source button"
                 )
             }
         }

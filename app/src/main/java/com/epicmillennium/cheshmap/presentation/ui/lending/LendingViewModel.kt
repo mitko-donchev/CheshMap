@@ -91,7 +91,7 @@ class LendingViewModel @Inject constructor(
         waterSource: WaterSource
     ) = viewModelScope.launch {
         userPreferencesRepository.dataStore.edit {
-            val listOfFavourites = (it[FAVOURITE_SOURCES] ?: emptySet<String>()).toMutableList()
+            val listOfFavourites = (it[FAVOURITE_SOURCES] ?: emptySet()).toMutableList()
 
             if (isFavourite) {
                 listOfFavourites.add(waterSource.id)
