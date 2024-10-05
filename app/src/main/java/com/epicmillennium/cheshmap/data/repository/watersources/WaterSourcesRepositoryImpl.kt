@@ -6,6 +6,9 @@ import com.epicmillennium.cheshmap.domain.marker.WaterSourcesRepository
 class WaterSourcesRepositoryImpl(
     private val waterSourcesTable: WaterSourcesTable
 ) : WaterSourcesRepository {
+    override suspend fun addWaterSource(waterSource: WaterSource) =
+        waterSourcesTable.insertWaterSource(waterSource)
+
     override suspend fun addAll(waterSources: List<WaterSource>) =
         waterSourcesTable.insertAll(waterSources)
 

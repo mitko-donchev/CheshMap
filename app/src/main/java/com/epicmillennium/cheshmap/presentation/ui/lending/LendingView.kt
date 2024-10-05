@@ -1,6 +1,5 @@
 package com.epicmillennium.cheshmap.presentation.ui.lending
 
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +36,8 @@ fun LendingView(
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
     fetchLatestUserData: () -> Job,
-    fetchUserLocation: () -> Job
+    fetchUserLocation: () -> Job,
+    setWaterSourceFavouriteState: (Boolean, WaterSource) -> Job
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -67,11 +67,11 @@ fun LendingView(
                         CheshMapTheme(darkTheme = LocalTheme.current.isDark) {
                             Scaffold(modifier = Modifier.fillMaxSize()) {
                                 GoogleMaps(
-                                    navigationActions,
                                     uiState.contentState.userState.lastKnownLocation,
                                     latestUserLocation,
                                     waterSourceMarkers,
-                                    fetchLatestUserLocation = { fetchUserLocation() }
+                                    fetchLatestUserLocation = { fetchUserLocation() },
+                                    setWaterSourceFavouriteState = setWaterSourceFavouriteState
                                 )
                             }
                         }

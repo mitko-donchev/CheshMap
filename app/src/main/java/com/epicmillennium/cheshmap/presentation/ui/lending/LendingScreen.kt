@@ -21,6 +21,7 @@ fun LendingScreen(navigationActions: AppNavigationActions) {
         latestUserLocation = latestUserLocation,
         waterSourceMarkers = waterSourceMarkers,
         lendingViewModel::fetchLatestUserData,
-        lendingViewModel::fetchUserLocation
+        lendingViewModel::fetchUserLocation,
+        lendingViewModel::setWaterSourceFavouriteState
     )
 }

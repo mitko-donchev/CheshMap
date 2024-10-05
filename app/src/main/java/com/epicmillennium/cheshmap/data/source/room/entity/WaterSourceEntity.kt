@@ -1,7 +1,7 @@
 package com.epicmillennium.cheshmap.data.source.room.entity
 
 import android.os.Parcelable
-import android.util.Log
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
@@ -21,34 +21,33 @@ data class WaterSourceEntity(
     val longitude: Double,
     val type: Int,
     val status: Int,
-    val photos: List<String>
+    val photos: List<String>,
+    @ColumnInfo(defaultValue = 0.toString())
+    val isFavourite: Boolean = false
 ) : Parcelable {
     companion object {
-        fun fromWaterSource(waterSource: WaterSource): WaterSourceEntity {
-            Log.d("WaterSourceEntity", "Mapping WaterSource with ID: ${waterSource.id}")
-            return WaterSourceEntity(
-                waterSource.id,
-                waterSource.name,
-                waterSource.details,
-                waterSource.latitude,
-                waterSource.longitude,
-                waterSource.type.ordinal,
-                waterSource.status.ordinal,
-                waterSource.photos.map { it.imageUrl }
-            )
-        }
+        fun fromWaterSource(waterSource: WaterSource) = WaterSourceEntity(
+            waterSource.id,
+            waterSource.name,
+            waterSource.details,
+            waterSource.latitude,
+            waterSource.longitude,
+            waterSource.type.ordinal,
+            waterSource.status.ordinal,
+            waterSource.photos.map { it.imageUrl },
+            waterSource.isFavourite
+        )
 
-        fun toWaterSource(waterSourceEntity: WaterSourceEntity): WaterSource {
-            return WaterSource(
-                waterSourceEntity.id,
-                waterSourceEntity.name,
-                waterSourceEntity.details,
-                waterSourceEntity.latitude,
-                waterSourceEntity.longitude,
-                WaterSourceType.fromOrdinal(waterSourceEntity.type),
-                WaterSourceStatus.fromOrdinal(waterSourceEntity.status),
-                waterSourceEntity.photos.map { WaterSourcePhoto(it) }
-            )
-        }
+        fun toWaterSource(waterSourceEntity: WaterSourceEntity) = WaterSource(
+            waterSourceEntity.id,
+            waterSourceEntity.name,
+            waterSourceEntity.details,
+            waterSourceEntity.latitude,
+            waterSourceEntity.longitude,
+            WaterSourceType.fromOrdinal(waterSourceEntity.type),
+            WaterSourceStatus.fromOrdinal(waterSourceEntity.status),
+            waterSourceEntity.photos.map { WaterSourcePhoto(it) },
+            waterSourceEntity.isFavourite
+        )
     }
 }

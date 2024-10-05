@@ -2,12 +2,16 @@ package com.epicmillennium.cheshmap.presentation.ui.lending
 
 import android.util.Log
 import androidx.compose.runtime.Immutable
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
+import com.epicmillennium.cheshmap.domain.usecase.AddWaterSourceUseCase
 import com.epicmillennium.cheshmap.domain.usecase.GetAllWaterSourcesUseCase
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.GPSService
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
+import com.epicmillennium.cheshmap.utils.Constants.FAVOURITE_SOURCES
+import com.epicmillennium.cheshmap.utils.preferences.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +26,9 @@ import javax.inject.Inject
 @HiltViewModel
 class LendingViewModel @Inject constructor(
     private val gpsService: GPSService,
+    private val addWaterSourceUseCase: AddWaterSourceUseCase,
     private val getAllWaterSourcesUseCase: GetAllWaterSourcesUseCase,
+    private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val _lendingUiState =
@@ -78,6 +84,25 @@ class LendingViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun setWaterSourceFavouriteState(
+        isFavourite: Boolean,
+        waterSource: WaterSource
+    ) = viewModelScope.launch {
+        userPreferencesRepository.dataStore.edit {
+            val listOfFavourites = (it[FAVOURITE_SOURCES] ?: emptySet<String>()).toMutableList()
+
+            if (isFavourite) {
+                listOfFavourites.add(waterSource.id)
+            } else {
+                listOfFavourites.remove(waterSource.id)
+            }
+
+            it[FAVOURITE_SOURCES] = listOfFavourites.toSet()
+        }
+
+        addWaterSourceUseCase.invoke(waterSource.copy(isFavourite = isFavourite))
     }
 
     private fun loadWaterSourceMarkers() = viewModelScope.launch(Dispatchers.IO) {

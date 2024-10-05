@@ -9,6 +9,11 @@ import kotlinx.coroutines.flow.map
 class WaterSourcesTableImpl(
     private val waterSourcesDatabase: WaterSourcesDatabase
 ) : WaterSourcesTable {
+    override suspend fun insertWaterSource(waterSource: WaterSource) {
+        waterSourcesDatabase.waterSourcesDao()
+            .insertWaterSource(WaterSourceEntity.fromWaterSource(waterSource))
+    }
+
     override suspend fun insertAll(waterSources: List<WaterSource>) {
         waterSourcesDatabase.waterSourcesDao()
             .insertAll(waterSources.map { WaterSourceEntity.fromWaterSource(it) })

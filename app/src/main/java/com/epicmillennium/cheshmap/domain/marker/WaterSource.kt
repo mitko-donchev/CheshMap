@@ -12,6 +12,9 @@ data class WaterSource(
     val type: WaterSourceType,
     val status: WaterSourceStatus,
     val photos: List<WaterSourcePhoto>,
+
+    // Other
+    val isFavourite: Boolean = false
 ) {
     companion object {
         fun fromFirestoreWaterSource(firestoreWaterSource: FirestoreWaterSource) = WaterSource(

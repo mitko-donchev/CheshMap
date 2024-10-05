@@ -10,9 +10,12 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface WaterSourcesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertWaterSource(waterSources: WaterSourceEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(waterSources: List<WaterSourceEntity>)
 
-    @Query("SELECT * FROM water_sources")
+    @Query("SELECT * FROM water_sources ORDER BY latitude ASC")
     fun getAll(): Flow<List<WaterSourceEntity>>
 
     @Query("SELECT * FROM water_sources WHERE id = :id")

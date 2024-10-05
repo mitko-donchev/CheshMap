@@ -4,6 +4,7 @@ import android.Manifest
 import androidx.compose.runtime.NoLiveLiterals
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 
 object Constants {
 
@@ -24,9 +25,9 @@ object Constants {
 
     // DataStore
     val GLOBAL_THEME_MODE_KEY = intPreferencesKey("global_theme_mode")
+    val FAVOURITE_SOURCES = stringSetPreferencesKey("favourite_sources")
     val DID_FETCH_DATA_ONCE = booleanPreferencesKey("did_fetch_data_once")
-    val DID_FETCH_DATA_ONCE_AFTER_SERVER_TRUE =
-        booleanPreferencesKey("did_fetch_data_once_after_server_true")
+    val FETCH_ON_SERVER_TRUE = booleanPreferencesKey("did_fetch_data_once_after_server_true")
 
     @NoLiveLiterals
     fun mapStyleLight(): String {

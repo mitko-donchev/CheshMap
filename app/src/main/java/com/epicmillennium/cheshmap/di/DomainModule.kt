@@ -2,6 +2,7 @@ package com.epicmillennium.cheshmap.di
 
 import com.epicmillennium.cheshmap.domain.marker.WaterSourcesRepository
 import com.epicmillennium.cheshmap.domain.usecase.AddAllWaterSourcesUseCase
+import com.epicmillennium.cheshmap.domain.usecase.AddWaterSourceUseCase
 import com.epicmillennium.cheshmap.domain.usecase.DeleteAllWaterSourcesUseCase
 import com.epicmillennium.cheshmap.domain.usecase.DeleteWaterSourceByIdUseCase
 import com.epicmillennium.cheshmap.domain.usecase.GetAllWaterSourcesUseCase
@@ -14,6 +15,10 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 object DomainModule {
+    @Provides
+    fun provideAddWaterSourceUseCase(waterSourcesRepository: WaterSourcesRepository) =
+        AddWaterSourceUseCase(waterSourcesRepository)
+
     @Provides
     fun provideAddAllWaterSourcesUseCase(waterSourcesRepository: WaterSourcesRepository) =
         AddAllWaterSourcesUseCase(waterSourcesRepository)

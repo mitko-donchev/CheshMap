@@ -35,6 +35,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material3.Button
@@ -45,6 +47,7 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -73,7 +76,6 @@ import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceStatus
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
 import com.epicmillennium.cheshmap.presentation.ui.components.onDebounceClick
-import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleDark
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleLight
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -85,15 +87,16 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @Composable
 fun GoogleMaps(
-    navigationActions: AppNavigationActions,
     initialUserLocation: Location,
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
-    fetchLatestUserLocation: () -> Unit
+    fetchLatestUserLocation: () -> Unit,
+    setWaterSourceFavouriteState: (Boolean, WaterSource) -> Job
 ) {
     val infoMarkerState = rememberMarkerState()
     val coroutineScope = rememberCoroutineScope()
@@ -295,7 +298,13 @@ fun GoogleMaps(
         ) {
             WaterSourceDetailsView(
                 waterSourceForDetails,
-                onCloseClick = { waterSourceForDetails = null }
+                onCloseClick = { waterSourceForDetails = null },
+                onFavouriteIconClick = { isFavourite, waterSource ->
+                    setWaterSourceFavouriteState.invoke(
+                        isFavourite,
+                        waterSource
+                    )
+                }
             )
         }
     }
@@ -304,7 +313,8 @@ fun GoogleMaps(
 @Composable
 private fun WaterSourceDetailsView(
     waterSource: WaterSource?,
-    onCloseClick: () -> Unit
+    onCloseClick: () -> Unit,
+    onFavouriteIconClick: (Boolean, WaterSource) -> Unit,
 ) {
     waterSource ?: return
 
@@ -335,7 +345,10 @@ private fun WaterSourceDetailsView(
             DetailsTopBar(waterSource, onCloseClick = onCloseClick)
         },
         bottomBar = {
-            DetailsBottomBar(waterSource, context)
+            DetailsBottomBar(
+                context,
+                waterSource,
+                onFavouriteIconClick = { onFavouriteIconClick.invoke(it, waterSource) })
         }
     ) { paddingValues ->
         Column(
@@ -459,15 +472,34 @@ private fun DetailsTopBar(
 
 @Composable
 private fun DetailsBottomBar(
+    context: Context,
     waterSource: WaterSource,
-    context: Context
+    onFavouriteIconClick: (Boolean) -> Unit
 ) {
+    var favouriteState by remember { mutableStateOf(waterSource.isFavourite) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(8.dp),
     ) {
+        IconToggleButton(checked = favouriteState,
+            onCheckedChange = {
+                favouriteState = it
+                onFavouriteIconClick.invoke(it)
+            }
+        ) {
+            if (favouriteState) {
+                Icon(Icons.Default.Favorite, contentDescription = "Favourite water source button")
+            } else {
+                Icon(
+                    Icons.Default.FavoriteBorder,
+                    contentDescription = "Un-favourite water source button"
+                )
+            }
+        }
+
         Button(
             modifier = Modifier
                 .wrapContentWidth()

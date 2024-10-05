@@ -1,5 +1,6 @@
 package com.epicmillennium.cheshmap.app.android
 
+import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
@@ -7,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.epicmillennium.cheshmap.core.ui.theme.AppThemeMode
 import com.epicmillennium.cheshmap.domain.serverdata.FirestoreServerData
 import com.epicmillennium.cheshmap.utils.Constants.DID_FETCH_DATA_ONCE
-import com.epicmillennium.cheshmap.utils.Constants.DID_FETCH_DATA_ONCE_AFTER_SERVER_TRUE
+import com.epicmillennium.cheshmap.utils.Constants.FETCH_ON_SERVER_TRUE
 import com.epicmillennium.cheshmap.utils.Constants.FIRESTORE_COLLECTION_SERVER_DATA
 import com.epicmillennium.cheshmap.utils.Constants.GLOBAL_THEME_MODE_KEY
 import com.epicmillennium.cheshmap.utils.WaterSourcesRetrieverWorkerUtils
@@ -39,6 +40,7 @@ class MainViewModel @Inject constructor(
 
     private fun fetchServerData() = viewModelScope.launch {
         if (shouldFetchDataForFirstTime()) {
+            Log.d("MainViewModel", "Fetching water sources")
             waterSourcesRetrieverWorkerUtils.retrieveWaterSources()
             userPreferencesRepository.dataStore.edit { it[DID_FETCH_DATA_ONCE] = true }
         } else {
@@ -52,13 +54,14 @@ class MainViewModel @Inject constructor(
 
             if (serverData.isNotEmpty() && serverData[0].shouldFetchLatestData && !didFetchDataAfterServerTrue()) {
                 userPreferencesRepository.dataStore.edit {
-                    it[DID_FETCH_DATA_ONCE_AFTER_SERVER_TRUE] = true
+                    it[FETCH_ON_SERVER_TRUE] = true
                 }
+                Log.d("MainViewModel", "Fetching water sources")
                 waterSourcesRetrieverWorkerUtils.retrieveWaterSources()
             } else {
                 if (didFetchDataAfterServerTrue()) {
                     userPreferencesRepository.dataStore.edit {
-                        it[DID_FETCH_DATA_ONCE_AFTER_SERVER_TRUE] = false
+                        it[FETCH_ON_SERVER_TRUE] = false
                     }
                 }
             }
@@ -76,10 +79,8 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun shouldFetchDataForFirstTime() =
-        !userPreferencesRepository.dataStore.data.map { it[DID_FETCH_DATA_ONCE] ?: true }.first()
+        !userPreferencesRepository.dataStore.data.map { it[DID_FETCH_DATA_ONCE] ?: false }.first()
 
     private suspend fun didFetchDataAfterServerTrue() =
-        userPreferencesRepository.dataStore.data.map {
-            it[DID_FETCH_DATA_ONCE_AFTER_SERVER_TRUE] ?: false
-        }.first()
+        userPreferencesRepository.dataStore.data.map { it[FETCH_ON_SERVER_TRUE] ?: false }.first()
 }
