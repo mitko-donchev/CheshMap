@@ -20,8 +20,9 @@ fun LendingScreen(navigationActions: AppNavigationActions) {
         uiState = lendingUiState,
         latestUserLocation = latestUserLocation,
         waterSourceMarkers = waterSourceMarkers,
-        lendingViewModel::fetchLatestUserData,
         lendingViewModel::fetchUserLocation,
+        lendingViewModel::fetchLatestUserData,
+        lendingViewModel::deleteWaterSource,
         lendingViewModel::setWaterSourceFavouriteState
     )
 }

@@ -4,6 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -33,12 +35,13 @@ import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.presentation.ui.components.FavouriteWaterSourceItem
+import com.epicmillennium.cheshmap.presentation.ui.components.WaterSourceDetailsView
 import kotlinx.coroutines.Job
 
 @Composable
 fun FavouriteView(
     favouriteUiState: FavouriteViewState,
-    setWaterSourceFavouriteState: (WaterSource) -> Job
+    setWaterSourceFavouriteState: (Boolean, WaterSource) -> Job
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -59,6 +62,8 @@ fun FavouriteView(
 
                 CompositionLocalProvider(value = LocalTheme provides DarkTheme(LocalTheme.current.isDark)) {
                     CheshMapTheme(darkTheme = LocalTheme.current.isDark) {
+                        var waterSourceForDetails by remember { mutableStateOf<WaterSource?>(null) }
+
                         Scaffold(modifier = Modifier.fillMaxSize()) {
                             LazyColumn(
                                 modifier = Modifier
@@ -82,6 +87,9 @@ fun FavouriteView(
                                         waterSource,
                                         onFavouriteIconClick = {
                                             waterSourceForFavStateAlter = waterSource
+                                        },
+                                        onFavItemClicked = {
+                                            waterSourceForDetails = it
                                         }
                                     )
                                 }
@@ -94,6 +102,7 @@ fun FavouriteView(
                                     waterSourceForFavStateAlter,
                                     onConfirmClick = {
                                         setWaterSourceFavouriteState.invoke(
+                                            false,
                                             waterSourceForFavStateAlter!!
                                         )
                                         waterSourceForFavStateAlter = null
@@ -103,6 +112,25 @@ fun FavouriteView(
                                     }
                                 )
                             }
+                        }
+
+                        AnimatedVisibility(
+                            visible = waterSourceForDetails != null,
+                            enter = scaleIn(animationSpec = tween(durationMillis = 500)),
+                            exit = scaleOut()
+                        ) {
+                            WaterSourceDetailsView(
+                                waterSourceForDetails,
+                                onCloseClick = { waterSourceForDetails = null },
+                                onFavouriteIconClick = { isFavourite, waterSource ->
+                                    setWaterSourceFavouriteState.invoke(
+                                        isFavourite,
+                                        waterSource
+                                    )
+                                },
+                                deleteWaterSource = {
+                                }
+                            )
                         }
                     }
                 }

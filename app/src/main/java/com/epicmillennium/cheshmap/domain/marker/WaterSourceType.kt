@@ -9,5 +9,8 @@ enum class WaterSourceType {
 
     companion object {
         fun fromOrdinal(ordinal: Int) = WaterSourceType.entries[ordinal]
+
+        fun fromFirestoreString(firestoreString: String) =
+            WaterSourceType.entries[firestoreString.toInt()]
     }
 }

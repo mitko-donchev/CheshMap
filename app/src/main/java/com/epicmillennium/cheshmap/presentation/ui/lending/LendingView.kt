@@ -35,8 +35,9 @@ fun LendingView(
     uiState: LendingViewState,
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
-    fetchLatestUserData: () -> Job,
     fetchUserLocation: () -> Job,
+    fetchLatestUserData: () -> Job,
+    deleteWaterSource: (WaterSource) -> Job,
     setWaterSourceFavouriteState: (Boolean, WaterSource) -> Job
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -70,6 +71,7 @@ fun LendingView(
                                     uiState.contentState.userState.lastKnownLocation,
                                     latestUserLocation,
                                     waterSourceMarkers,
+                                    deleteWaterSource = deleteWaterSource,
                                     fetchLatestUserLocation = { fetchUserLocation() },
                                     setWaterSourceFavouriteState = setWaterSourceFavouriteState
                                 )

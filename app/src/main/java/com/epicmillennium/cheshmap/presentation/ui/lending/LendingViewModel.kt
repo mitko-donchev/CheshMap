@@ -7,11 +7,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.usecase.AddWaterSourceUseCase
+import com.epicmillennium.cheshmap.domain.usecase.DeleteWaterSourceByIdUseCase
 import com.epicmillennium.cheshmap.domain.usecase.GetAllWaterSourcesUseCase
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.GPSService
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
 import com.epicmillennium.cheshmap.utils.Constants.FAVOURITE_SOURCES
+import com.epicmillennium.cheshmap.utils.Constants.FIRESTORE_COLLECTION_WATER_SOURCES
 import com.epicmillennium.cheshmap.utils.preferences.UserPreferencesRepository
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,9 +29,11 @@ import javax.inject.Inject
 @HiltViewModel
 class LendingViewModel @Inject constructor(
     private val gpsService: GPSService,
+    private val firestore: FirebaseFirestore,
     private val addWaterSourceUseCase: AddWaterSourceUseCase,
     private val getAllWaterSourcesUseCase: GetAllWaterSourcesUseCase,
     private val userPreferencesRepository: UserPreferencesRepository,
+    private val deleteWaterSourceByIdUseCase: DeleteWaterSourceByIdUseCase
 ) : ViewModel() {
 
     private val _lendingUiState =
@@ -103,6 +108,45 @@ class LendingViewModel @Inject constructor(
         }
 
         addWaterSourceUseCase.invoke(waterSource.copy(isFavourite = isFavourite))
+    }
+
+    fun deleteWaterSource(
+        waterSource: WaterSource
+    ) = viewModelScope.launch(Dispatchers.IO) {
+        userPreferencesRepository.dataStore.edit {
+            val listOfFavourites = (it[FAVOURITE_SOURCES] ?: emptySet()).toMutableList()
+            listOfFavourites.remove(waterSource.id)
+
+            it[FAVOURITE_SOURCES] = listOfFavourites.toSet()
+        }
+
+        deleteWaterSourceByIdUseCase.invoke(waterSource.id).fold(
+            onSuccess = {
+                firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
+                    .document(waterSource.id)
+                    .delete()
+                    .addOnSuccessListener {
+                        Log.d(
+                            "LendingViewModel",
+                            "Document deleted successfully ${waterSource.id}!"
+                        )
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(
+                            "LendingViewModel",
+                            "Error deleting document",
+                            e
+                        )
+                    }
+            },
+            onFailure = {
+                Log.e(
+                    "LendingViewModel",
+                    "Error deleting document",
+                    it
+                )
+            }
+        )
     }
 
     private fun loadWaterSourceMarkers() = viewModelScope.launch(Dispatchers.IO) {

@@ -1,5 +1,6 @@
 package com.epicmillennium.cheshmap.presentation.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,13 +38,17 @@ import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
 fun FavouriteWaterSourceItem(
     modifier: Modifier,
     waterSource: WaterSource,
-    onFavouriteIconClick: (Boolean) -> Unit
+    onFavouriteIconClick: (Boolean) -> Unit,
+    onFavItemClicked: (WaterSource) -> Unit
 ) {
     Card(
         modifier = modifier
             .wrapContentHeight()
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable {
+                onFavItemClicked.invoke(waterSource)
+            }
     ) {
         Box(
             modifier = Modifier
@@ -102,6 +107,7 @@ fun FavouriteWaterSourceItemPreview() {
             isFavourite = true,
             details = "This is a water source"
         ),
-        onFavouriteIconClick = {}
+        onFavouriteIconClick = {},
+        onFavItemClicked = {}
     )
 }

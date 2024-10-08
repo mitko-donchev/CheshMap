@@ -41,6 +41,7 @@ class FavouriteViewModel @Inject constructor(
         )
 
     fun setWaterSourceFavouriteState(
+        isFavourite: Boolean,
         waterSource: WaterSource
     ) = viewModelScope.launch {
         userPreferencesRepository.dataStore.edit {
@@ -51,7 +52,7 @@ class FavouriteViewModel @Inject constructor(
             it[FAVOURITE_SOURCES] = listOfFavourites.toSet()
         }
 
-        addWaterSourceUseCase.invoke(waterSource.copy(isFavourite = false))
+        addWaterSourceUseCase.invoke(waterSource.copy(isFavourite = isFavourite))
     }
 
     private fun loadFavouriteWaterSources() = viewModelScope.launch(Dispatchers.IO) {
