@@ -16,7 +16,6 @@ import com.epicmillennium.cheshmap.app.android.MainViewModel
 import com.epicmillennium.cheshmap.core.ui.theme.CheshMapTheme
 import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
-import com.epicmillennium.cheshmap.presentation.ui.navigation.AppBottomNavigation
 import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavGraph
 import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 import com.epicmillennium.cheshmap.utils.retrieveDarkThemeFromState
@@ -38,10 +37,10 @@ fun CheshMapApp() {
             Surface {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    bottomBar = { AppBottomNavigation(navController = navController) }
+//                    bottomBar = { AppBottomNavigation(navController = navController) }
                 ) { paddingValues ->
                     AppNavGraph(
-                        modifier = Modifier.padding(paddingValues),
+                        modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
                         navController = navController,
                         navigationActions = navigationActions
                     )

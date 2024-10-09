@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.epicmillennium.cheshmap.BuildConfig
 import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceStatus
@@ -235,25 +236,27 @@ private fun DetailsBottomBar(
             .wrapContentHeight()
             .padding(8.dp),
     ) {
-        // TODO - hide before release (don't need this for normal users)
-        Icon(
-            imageVector = Icons.Default.Delete,
-            tint = Color.Red,
-            contentDescription = "Delete source button",
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .clickable {
-                    onDeleteIconClick.invoke()
-                }
-        )
+        // Will be only available in debug mode
+        if (BuildConfig.DEBUG) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                tint = Color.Red,
+                contentDescription = "Delete source button",
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 32.dp)
+                    .clickable {
+                        onDeleteIconClick.invoke()
+                    }
+            )
+        }
 
         IconToggleButton(
             checked = favouriteState,
             onCheckedChange = {
                 favouriteState = it
                 onFavouriteIconClick.invoke(it)
-            },
-            modifier = Modifier.padding(start = 32.dp)
+            }
         ) {
             if (favouriteState) {
                 Icon(Icons.Default.Favorite, contentDescription = "Favourite water source button")

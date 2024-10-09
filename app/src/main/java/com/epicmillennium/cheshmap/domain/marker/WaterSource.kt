@@ -1,5 +1,8 @@
 package com.epicmillennium.cheshmap.domain.marker
 
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.clustering.ClusterItem
+
 data class WaterSource(
     // Basic info
     val id: String,
@@ -15,7 +18,7 @@ data class WaterSource(
 
     // Other
     val isFavourite: Boolean = false
-) {
+) : ClusterItem {
     companion object {
         fun fromFirestoreWaterSource(firestoreWaterSource: FirestoreWaterSource) = WaterSource(
             firestoreWaterSource.id,
@@ -50,4 +53,12 @@ data class WaterSource(
                 ?: emptyList()
         }
     }
+
+    override fun getPosition(): LatLng = LatLng(latitude, longitude)
+
+    override fun getTitle(): String = name
+
+    override fun getSnippet(): String? = null
+
+    override fun getZIndex(): Float = 1f
 }
