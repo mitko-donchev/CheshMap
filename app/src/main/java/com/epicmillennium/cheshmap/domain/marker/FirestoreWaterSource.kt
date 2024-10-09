@@ -1,12 +1,17 @@
 package com.epicmillennium.cheshmap.domain.marker
 
+import androidx.annotation.Keep
+import kotlinx.serialization.Serializable
+
+@Keep
+@Serializable
 data class FirestoreWaterSource(
-    val id: String = "",
-    val name: String = "",
-    val details: String = "",
-    val latitude: String = "0.0",
-    val longitude: String = "0.0",
-    val type: String = "1",
-    val status: String = "3",
-    val photos: String = "none",
+    @Keep val id: String = "",
+    @Keep val name: String = "",
+    @Keep val details: String = "",
+    @Keep val latitude: String = "0.0",
+    @Keep val longitude: String = "0.0",
+    @Keep val type: String = "1",
+    @Keep val status: String = "3",
+    @Keep val photos: String = "none",
 )
