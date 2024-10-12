@@ -4,10 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 
 @Composable
-fun LendingScreen(navigationActions: AppNavigationActions) {
+fun LendingScreen() {
 
     val lendingViewModel: LendingViewModel = hiltViewModel()
 
@@ -16,7 +15,6 @@ fun LendingScreen(navigationActions: AppNavigationActions) {
     val waterSourceMarkers by lendingViewModel.waterSourceMarkers.collectAsStateWithLifecycle()
 
     LendingView(
-        navigationActions = navigationActions,
         uiState = lendingUiState,
         latestUserLocation = latestUserLocation,
         waterSourceMarkers = waterSourceMarkers,

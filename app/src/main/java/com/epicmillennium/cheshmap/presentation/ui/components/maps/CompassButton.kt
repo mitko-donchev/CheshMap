@@ -17,7 +17,7 @@ import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.presentation.ui.components.onDebounceClick
 
 @Composable
-fun Compass(bearing: Float, onCompassClick: () -> Unit) {
+fun CompassButton(bearing: Float, onCompassClick: () -> Unit) {
     FilledIconButton(
         modifier = Modifier
             .padding(14.dp)

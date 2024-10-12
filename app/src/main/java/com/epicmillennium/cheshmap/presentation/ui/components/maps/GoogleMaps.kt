@@ -9,17 +9,14 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.NearMe
-import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,14 +34,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
 import com.epicmillennium.cheshmap.presentation.ui.components.WaterSourceDetailsView
-import com.epicmillennium.cheshmap.presentation.ui.components.onDebounceClick
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleDark
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleLight
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -64,15 +58,13 @@ import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-@OptIn(MapsComposeExperimentalApi::class)
 @Composable
 fun GoogleMaps(
     initialUserLocation: Location,
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
+    showWaterSourceDetails: (WaterSource) -> Unit,
     fetchLatestUserLocation: () -> Unit,
-    deleteWaterSource: (WaterSource) -> Job,
-    setWaterSourceFavouriteState: (Boolean, WaterSource) -> Job,
 ) {
     val infoMarkerState = rememberMarkerState()
     val coroutineScope = rememberCoroutineScope()
@@ -83,8 +75,6 @@ fun GoogleMaps(
 
     var isMapLoaded by remember { mutableStateOf(false) }
     var isUserCentered by remember { mutableStateOf(true) }
-
-    var waterSourceForDetails by remember { mutableStateOf<WaterSource?>(null) }
 
     // Map UI settings
     val uiSettings by remember {
@@ -214,7 +204,7 @@ fun GoogleMaps(
             CustomRendererClustering(
                 waterSourceMarkers,
                 onMarkerClicked = {
-                    waterSourceForDetails = it
+                    showWaterSourceDetails.invoke(it)
                 }
             )
         }
@@ -235,54 +225,31 @@ fun GoogleMaps(
             }
         }
 
-        AnimatedVisibility(
-            visible = bearing != 0f,
-            modifier = Modifier.align(Alignment.TopEnd),
-            enter = fadeIn(),
-            exit = fadeOut(animationSpec = tween(durationMillis = 500, delayMillis = 1500))
-        ) {
-            // Custom Compass overlay
-            Compass(
-                bearing = bearing,
-                onCompassClick = {
-                    coroutineScope.launch {
-                        pointMapToNorth()
+        Column(modifier = Modifier.align(Alignment.TopEnd)) {
+            AnimatedVisibility(
+                visible = !isUserCentered,
+                enter = fadeIn(),
+                exit = fadeOut(animationSpec = tween(durationMillis = 500))
+            ) {
+                CenterOnUserLocationButton {
+                    fetchLatestUserLocation()
+                }
+            }
+
+            AnimatedVisibility(
+                visible = bearing != 0f,
+                enter = fadeIn(),
+                exit = fadeOut(animationSpec = tween(durationMillis = 500, delayMillis = 1500))
+            ) {
+                CompassButton(
+                    bearing = bearing,
+                    onCompassClick = {
+                        coroutineScope.launch {
+                            pointMapToNorth()
+                        }
                     }
-                }
-            )
-        }
-
-        MapButton(
-            onClick = { if (!isUserCentered) fetchLatestUserLocation() },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(14.dp)
-                .size(50.dp)
-        ) {
-            Icon(
-                imageVector = if (isUserCentered) Icons.Default.NearMe else Icons.Outlined.NearMe,
-                contentDescription = stringResource(R.string.center_on_user_location)
-            )
-        }
-
-        AnimatedVisibility(
-            visible = waterSourceForDetails != null,
-            enter = scaleIn(animationSpec = tween(durationMillis = 500)),
-            exit = scaleOut()
-        ) {
-            WaterSourceDetailsView(
-                waterSourceForDetails,
-                onCloseClick = { waterSourceForDetails = null },
-                onFavouriteIconClick = { isFavourite, waterSource ->
-                    setWaterSourceFavouriteState.invoke(
-                        isFavourite,
-                        waterSource
-                    )
-                },
-                deleteWaterSource = { waterSource ->
-                    deleteWaterSource.invoke(waterSource)
-                }
-            )
+                )
+            }
         }
     }
 }
@@ -351,20 +318,5 @@ fun CustomRendererClustering(
             items = items,
             clusterManager = clusterManager,
         )
-    }
-}
-
-@Composable
-private fun MapButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    icon: @Composable () -> Unit
-) {
-    FilledIconButton(
-        modifier = modifier,
-        shape = CircleShape,
-        onClick = onDebounceClick { onClick() }
-    ) {
-        icon.invoke()
     }
 }
