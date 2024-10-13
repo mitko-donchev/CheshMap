@@ -13,11 +13,17 @@ fun LendingScreen() {
     val lendingUiState by lendingViewModel.lendingUiState.collectAsStateWithLifecycle()
     val latestUserLocation by lendingViewModel.userLocation.collectAsStateWithLifecycle()
     val waterSourceMarkers by lendingViewModel.waterSourceMarkers.collectAsStateWithLifecycle()
+    val globalThemeState by lendingViewModel.globalThemeState.collectAsStateWithLifecycle()
+    val isUserLocationTrackingEnabled by lendingViewModel.isUserLocationTrackingEnabled.collectAsStateWithLifecycle()
 
     LendingView(
         uiState = lendingUiState,
         latestUserLocation = latestUserLocation,
         waterSourceMarkers = waterSourceMarkers,
+        globalThemeState = globalThemeState,
+        isUserLocationTrackingEnabled = isUserLocationTrackingEnabled,
+        lendingViewModel::setGlobalThemeMode,
+        lendingViewModel::setUserLocationTrackingEnabled,
         lendingViewModel::fetchUserLocation,
         lendingViewModel::fetchLatestUserData,
         lendingViewModel::deleteWaterSource,

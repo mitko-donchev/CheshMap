@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     // UI
+    implementation(libs.core)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)

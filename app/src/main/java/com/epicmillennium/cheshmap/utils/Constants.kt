@@ -26,6 +26,7 @@ object Constants {
     // DataStore
     val GLOBAL_THEME_MODE_KEY = intPreferencesKey("global_theme_mode")
     val FAVOURITE_SOURCES = stringSetPreferencesKey("favourite_sources")
+    val USER_LOCATION_TRACKING_ENABLED_KEY = booleanPreferencesKey("user_location_tracking_enabled")
     val DID_FETCH_DATA_ONCE = booleanPreferencesKey("did_fetch_data_once")
     val FETCH_ON_SERVER_TRUE = booleanPreferencesKey("did_fetch_data_once_after_server_true")
 

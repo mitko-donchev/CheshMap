@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.epicmillennium.cheshmap.core.ui.theme.AppThemeMode
 import com.epicmillennium.cheshmap.core.ui.theme.CheshMapTheme
 import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
@@ -31,6 +32,7 @@ import com.epicmillennium.cheshmap.presentation.ui.components.maps.GoogleMaps
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.isLocationValid
 import com.epicmillennium.cheshmap.presentation.ui.favourite.FavouriteView
+import com.epicmillennium.cheshmap.presentation.ui.settings.SettingsView
 import com.epicmillennium.cheshmap.utils.Constants.LOCATION_PERMISSIONS
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -42,6 +44,10 @@ fun LendingView(
     uiState: LendingViewState,
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
+    globalThemeState: AppThemeMode,
+    isUserLocationTrackingEnabled: Boolean,
+    setGlobalThemeMode: (AppThemeMode) -> Job,
+    setUserLocationTrackingEnabled: (Boolean) -> Job,
     fetchUserLocation: () -> Job,
     fetchLatestUserData: () -> Job,
     deleteWaterSource: (WaterSource) -> Job,
@@ -84,6 +90,7 @@ fun LendingView(
                                         uiState.contentState.userState.lastKnownLocation,
                                         latestUserLocation,
                                         waterSourceMarkers,
+                                        isUserLocationTrackingEnabled,
                                         showWaterSourceDetails = { waterSourceForDetails = it },
                                         fetchLatestUserLocation = { fetchUserLocation() },
                                     )
@@ -103,6 +110,20 @@ fun LendingView(
                                             favouriteWaterSources = waterSourceMarkers.filter { it.isFavourite },
                                             onNavigateBack = { currentScreen = Screen.LENDING },
                                             setWaterSourceFavouriteState = setWaterSourceFavouriteState
+                                        )
+                                    }
+
+                                    AnimatedVisibility(
+                                        visible = currentScreen == Screen.SETTINGS,
+                                        enter = scaleIn(animationSpec = tween(durationMillis = 500)),
+                                        exit = scaleOut()
+                                    ) {
+                                        SettingsView(
+                                            globalThemeState,
+                                            isUserLocationTrackingEnabled,
+                                            setGlobalThemeMode = { setGlobalThemeMode(it) },
+                                            setUserLocationTrackingEnabled = { setUserLocationTrackingEnabled(it) },
+                                            onNavigateBack = { currentScreen = Screen.LENDING },
                                         )
                                     }
 

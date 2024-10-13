@@ -29,6 +29,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.core.ui.theme.CheshMapTheme
 import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
@@ -56,12 +58,12 @@ fun FavouriteView(
             Scaffold(modifier = Modifier.fillMaxSize(),
                 topBar = {
                     CenterAlignedTopAppBar(
-                        title = { Text(text = "Favourites") },
+                        title = { Text(text = stringResource(R.string.favourites)) },
                         navigationIcon = {
                             IconButton(onClick = onNavigateBack) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Navigate back"
+                                    contentDescription = stringResource(R.string.navigate_back)
                                 )
                             }
                         },
@@ -150,16 +152,23 @@ fun FavouriteAlertDialog(
     waterSource ?: return
 
     AlertDialog(
-        title = { Text(text = "Remove from favourites") },
-        text = { Text(text = "Are you sure you want to remove ${waterSource.name} from favourites?") },
+        title = { Text(text = stringResource(R.string.remove_from_favourites)) },
+        text = {
+            Text(
+                text = stringResource(
+                    R.string.are_you_sure_you_want_to_remove_from_favourites,
+                    waterSource.name
+                )
+            )
+        },
         confirmButton = {
             TextButton(onClick = onConfirmClick) {
-                Text(text = "Yes")
+                Text(text = stringResource(R.string.yes))
             }
         },
         dismissButton = {
             TextButton(onClick = dismiss) {
-                Text(text = "No")
+                Text(text = stringResource(R.string.no))
             }
         },
         onDismissRequest = dismiss,

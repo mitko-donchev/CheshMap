@@ -30,7 +30,7 @@ class MainViewModel @Inject constructor(
     private val waterSourcesRetrieverWorkerUtils: WaterSourcesRetrieverWorkerUtils,
 ) : ViewModel() {
 
-    private val _globalThemeState = MutableStateFlow(AppThemeMode.MODE_NIGHT)
+    private val _globalThemeState = MutableStateFlow(AppThemeMode.MODE_AUTO)
     val globalThemeState: StateFlow<AppThemeMode> = _globalThemeState
 
     init {

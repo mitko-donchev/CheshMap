@@ -5,8 +5,6 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
-import com.epicmillennium.cheshmap.presentation.ui.components.WaterSourceDetailsView
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleDark
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleLight
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -55,7 +52,6 @@ import com.google.maps.android.compose.clustering.rememberClusterManager
 import com.google.maps.android.compose.clustering.rememberClusterRenderer
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @Composable
@@ -63,6 +59,7 @@ fun GoogleMaps(
     initialUserLocation: Location,
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
+    isUserLocationTrackingEnabled: Boolean,
     showWaterSourceDetails: (WaterSource) -> Unit,
     fetchLatestUserLocation: () -> Unit,
 ) {
@@ -80,10 +77,10 @@ fun GoogleMaps(
     val uiSettings by remember {
         mutableStateOf(
             MapUiSettings(
-                compassEnabled = false,
+                compassEnabled = false, // it is handled by a custom button
                 mapToolbarEnabled = false,
                 zoomControlsEnabled = false,
-                myLocationButtonEnabled = false,
+                myLocationButtonEnabled = false, // same as the compass
             )
         )
     }
@@ -227,7 +224,7 @@ fun GoogleMaps(
 
         Column(modifier = Modifier.align(Alignment.TopEnd)) {
             AnimatedVisibility(
-                visible = !isUserCentered,
+                visible = !isUserCentered && isUserLocationTrackingEnabled,
                 enter = fadeIn(),
                 exit = fadeOut(animationSpec = tween(durationMillis = 500))
             ) {

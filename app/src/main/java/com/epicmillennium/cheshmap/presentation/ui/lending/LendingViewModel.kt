@@ -2,9 +2,11 @@ package com.epicmillennium.cheshmap.presentation.ui.lending
 
 import android.util.Log
 import androidx.compose.runtime.Immutable
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.epicmillennium.cheshmap.core.ui.theme.AppThemeMode
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.usecase.AddWaterSourceUseCase
 import com.epicmillennium.cheshmap.domain.usecase.DeleteWaterSourceByIdUseCase
@@ -13,6 +15,8 @@ import com.epicmillennium.cheshmap.presentation.ui.components.maps.GPSService
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
 import com.epicmillennium.cheshmap.utils.Constants.FAVOURITE_SOURCES
 import com.epicmillennium.cheshmap.utils.Constants.FIRESTORE_COLLECTION_WATER_SOURCES
+import com.epicmillennium.cheshmap.utils.Constants.GLOBAL_THEME_MODE_KEY
+import com.epicmillennium.cheshmap.utils.Constants.USER_LOCATION_TRACKING_ENABLED_KEY
 import com.epicmillennium.cheshmap.utils.preferences.UserPreferencesRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -60,6 +65,36 @@ class LendingViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(3000L),
             emptyList()
         )
+
+    private val _globalThemeState = MutableStateFlow(AppThemeMode.MODE_AUTO)
+    val globalThemeState = _globalThemeState
+        .onStart { fetchGlobalThemeMode() }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(3000L),
+            AppThemeMode.MODE_AUTO
+        )
+
+    private val _isUserLocationTrackingEnabled = MutableStateFlow(true)
+    val isUserLocationTrackingEnabled = _isUserLocationTrackingEnabled
+        .onStart { fetchUserLocationTrackingEnabled() }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(3000L),
+            true
+        )
+
+    fun setGlobalThemeMode(appThemeMode: AppThemeMode) = viewModelScope.launch {
+        userPreferencesRepository.dataStore.edit {
+            it[GLOBAL_THEME_MODE_KEY] = appThemeMode.ordinal
+        }
+    }
+
+    fun setUserLocationTrackingEnabled(isEnabled: Boolean) = viewModelScope.launch {
+        userPreferencesRepository.dataStore.edit {
+            it[USER_LOCATION_TRACKING_ENABLED_KEY] = isEnabled
+        }
+    }
 
     fun fetchUserLocation() = viewModelScope.launch(Dispatchers.IO) {
         Log.v("Heavy methods logs", "Refreshing latest user location")
@@ -161,6 +196,24 @@ class LendingViewModel @Inject constructor(
             Log.e("Heavy methods logs", "Failed to get water sources: ${error.message}")
             // Handle error and retry
         })
+    }
+
+    private fun fetchGlobalThemeMode() = viewModelScope.launch {
+        userPreferencesRepository.dataStore.data.map { preferences: Preferences ->
+            AppThemeMode.fromOrdinal(
+                preferences[GLOBAL_THEME_MODE_KEY] ?: AppThemeMode.MODE_NIGHT.ordinal
+            )
+        }.collect {
+            _globalThemeState.value = it
+        }
+    }
+
+    private fun fetchUserLocationTrackingEnabled() = viewModelScope.launch {
+        userPreferencesRepository.dataStore.data.map { preferences: Preferences ->
+            preferences[USER_LOCATION_TRACKING_ENABLED_KEY] ?: true
+        }.collect {
+            _isUserLocationTrackingEnabled.value = it
+        }
     }
 }
 
