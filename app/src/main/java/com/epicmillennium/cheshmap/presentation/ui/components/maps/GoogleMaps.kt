@@ -5,17 +5,29 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,13 +41,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
+import com.epicmillennium.cheshmap.presentation.ui.components.onDebounceClick
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleDark
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleLight
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -60,8 +76,11 @@ fun GoogleMaps(
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
     isUserLocationTrackingEnabled: Boolean,
+    isPickingLocationForNewWaterSource: Boolean,
     showWaterSourceDetails: (WaterSource) -> Unit,
     fetchLatestUserLocation: () -> Unit,
+    confirmPickedLocation: (LatLng) -> Unit,
+    cancelPickingLocationForNewWaterSource: () -> Unit,
 ) {
     val infoMarkerState = rememberMarkerState()
     val coroutineScope = rememberCoroutineScope()
@@ -81,6 +100,7 @@ fun GoogleMaps(
                 mapToolbarEnabled = false,
                 zoomControlsEnabled = false,
                 myLocationButtonEnabled = false, // same as the compass
+                rotationGesturesEnabled = !isPickingLocationForNewWaterSource
             )
         )
     }
@@ -248,6 +268,60 @@ fun GoogleMaps(
                 )
             }
         }
+
+        AnimatedVisibility(
+            visible = isPickingLocationForNewWaterSource,
+            enter = scaleIn(animationSpec = tween(durationMillis = 500)),
+            exit = scaleOut(animationSpec = tween(durationMillis = 500)),
+            modifier = Modifier.align(Alignment.Center)
+        ) {
+            Icon(
+                imageVector = Icons.Default.WaterDrop,
+                contentDescription = stringResource(R.string.pick_location_for_new_water_source),
+                modifier = Modifier
+                    .size(48.dp)
+                    .rotate(180f)
+                    .offset(y = (20).dp)
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isPickingLocationForNewWaterSource,
+            enter = fadeIn(animationSpec = tween(durationMillis = 500)),
+            exit = fadeOut(animationSpec = tween(durationMillis = 500)),
+            modifier = Modifier.align(Alignment.BottomEnd)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(14.dp)
+                    .wrapContentHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                FilledIconButton(
+                    shape = MaterialTheme.shapes.medium,
+                    colors = IconButtonDefaults.iconButtonColors().copy(containerColor = Color.Red),
+                    onClick = onDebounceClick { cancelPickingLocationForNewWaterSource.invoke() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.cancel_picking_location)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                FilledIconButton(
+                    modifier = Modifier.size(56.dp),
+                    shape = MaterialTheme.shapes.large,
+                    onClick = onDebounceClick { confirmPickedLocation.invoke(cameraPositionState.position.target) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Done,
+                        contentDescription = stringResource(R.string.confirm_picked_location)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -290,6 +364,7 @@ fun CustomRendererClustering(
                     WaterSourceType.MINERAL_WATER -> Color.Green
                     WaterSourceType.HOT_MINERAL_WATER -> Color.Red
                     WaterSourceType.SPRING_WATER -> Color.Gray
+                    WaterSourceType.NONE -> Color.Gray
                 },
                 modifier = Modifier.size(32.dp)
             )

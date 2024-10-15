@@ -84,7 +84,7 @@ fun FavouriteWaterSourceItem(
             ) {
                 Icon(
                     Icons.Default.Favorite,
-                    contentDescription = "Favourite water source button"
+                    contentDescription = stringResource(R.string.favourite_water_source_button)
                 )
             }
         }

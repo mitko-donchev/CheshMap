@@ -1,6 +1,7 @@
 package com.epicmillennium.cheshmap.presentation.ui.settings
 
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeOut
@@ -74,6 +75,9 @@ fun SettingsView(
     setUserLocationTrackingEnabled: (Boolean) -> Job,
     onNavigateBack: () -> Unit
 ) {
+    // Handle back press
+    BackHandler { onNavigateBack() }
+
     CompositionLocalProvider(value = LocalTheme provides DarkTheme(LocalTheme.current.isDark)) {
         CheshMapTheme(darkTheme = LocalTheme.current.isDark) {
             Scaffold(modifier = Modifier.fillMaxSize(),

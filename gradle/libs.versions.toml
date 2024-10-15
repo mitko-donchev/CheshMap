@@ -82,6 +82,7 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
 androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "foundation" }
+androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeFoundation" }
 androidx-compose-foundation = { group = "androidx.wear.compose", name = "compose-foundation", version.ref = "composeFoundation" }
 google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "google-maps" }
 google-maps-compose-utils = { group = "com.google.maps.android", name = "maps-compose-utils", version.ref = "google-maps" }

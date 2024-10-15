@@ -1,5 +1,6 @@
 package com.epicmillennium.cheshmap.presentation.ui.favourite
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -46,10 +47,12 @@ fun FavouriteView(
     onNavigateBack: () -> Unit,
     setWaterSourceFavouriteState: (Boolean, WaterSource) -> Job,
 ) {
-
     val lazyListState = rememberLazyListState()
 
     var waterSourceForFavStateAlter by remember { mutableStateOf<WaterSource?>(null) }
+
+    // Handle back press
+    BackHandler { onNavigateBack() }
 
     CompositionLocalProvider(value = LocalTheme provides DarkTheme(LocalTheme.current.isDark)) {
         CheshMapTheme(darkTheme = LocalTheme.current.isDark) {

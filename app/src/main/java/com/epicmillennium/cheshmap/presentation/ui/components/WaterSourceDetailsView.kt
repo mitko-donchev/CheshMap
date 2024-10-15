@@ -74,6 +74,7 @@ fun WaterSourceDetailsView(
             WaterSourceStatus.UNDER_CONSTRUCTION -> R.string.under_construction
             WaterSourceStatus.OUT_OF_ORDER -> R.string.out_of_order
             WaterSourceStatus.FOR_REVIEW -> R.string.for_review
+            WaterSourceStatus.NONE -> R.string.for_review
         }
     )
 
@@ -84,6 +85,7 @@ fun WaterSourceDetailsView(
             WaterSourceType.MINERAL_WATER -> R.string.mineral_water
             WaterSourceType.HOT_MINERAL_WATER -> R.string.hot_mineral_water
             WaterSourceType.SPRING_WATER -> R.string.spring_water
+            WaterSourceType.NONE -> R.string.urban_water_source
         }
     )
 
@@ -210,7 +212,7 @@ private fun DetailsTopBar(
             IconButton(onClick = onCloseClick) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close details"
+                    contentDescription = stringResource(R.string.close_details)
                 )
             }
         },
@@ -241,7 +243,7 @@ private fun DetailsBottomBar(
             Icon(
                 imageVector = Icons.Default.Delete,
                 tint = Color.Red,
-                contentDescription = "Delete source button",
+                contentDescription = stringResource(R.string.delete_source_button),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .padding(start = 32.dp)
@@ -259,11 +261,11 @@ private fun DetailsBottomBar(
             }
         ) {
             if (favouriteState) {
-                Icon(Icons.Default.Favorite, contentDescription = "Favourite water source button")
+                Icon(Icons.Default.Favorite, contentDescription = stringResource(R.string.favourite_water_source_button))
             } else {
                 Icon(
                     Icons.Default.FavoriteBorder,
-                    contentDescription = "Un-favourite water source button"
+                    contentDescription = stringResource(R.string.un_favourite_water_source_button),
                 )
             }
         }
@@ -283,7 +285,7 @@ private fun DetailsBottomBar(
         ) {
             Icon(
                 imageVector = Icons.Default.Directions,
-                contentDescription = "Directions button icon",
+                contentDescription = stringResource(R.string.directions_button_icon),
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = stringResource(R.string.take_me_there))

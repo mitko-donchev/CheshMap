@@ -52,6 +52,7 @@ fun WaterSourceMarker(
             WaterSourceStatus.UNDER_CONSTRUCTION -> R.string.under_construction
             WaterSourceStatus.OUT_OF_ORDER -> R.string.out_of_order
             WaterSourceStatus.FOR_REVIEW -> R.string.for_review
+            WaterSourceStatus.NONE -> R.string.for_review
         }
     )
 
@@ -62,6 +63,7 @@ fun WaterSourceMarker(
             WaterSourceType.MINERAL_WATER -> R.string.mineral_water
             WaterSourceType.HOT_MINERAL_WATER -> R.string.hot_mineral_water
             WaterSourceType.SPRING_WATER -> R.string.spring_water
+            WaterSourceType.NONE -> R.string.urban_water_source
         }
     )
 

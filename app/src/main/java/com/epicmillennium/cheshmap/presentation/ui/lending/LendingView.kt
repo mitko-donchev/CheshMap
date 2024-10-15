@@ -2,6 +2,8 @@ package com.epicmillennium.cheshmap.presentation.ui.lending
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import com.epicmillennium.cheshmap.core.ui.theme.CheshMapTheme
 import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
 import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
+import com.epicmillennium.cheshmap.presentation.ui.add.AddNewSourceView
 import com.epicmillennium.cheshmap.presentation.ui.components.ViewExpandableFloatingButton
 import com.epicmillennium.cheshmap.presentation.ui.components.WaterSourceDetailsView
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.GoogleMaps
@@ -36,6 +39,7 @@ import com.epicmillennium.cheshmap.presentation.ui.settings.SettingsView
 import com.epicmillennium.cheshmap.utils.Constants.LOCATION_PERMISSIONS
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Job
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -77,10 +81,12 @@ fun LendingView(
                 }
 
                 is LendingViewContentState.Success -> {
-
                     var currentScreen by remember { mutableStateOf(Screen.LENDING) }
 
                     var waterSourceForDetails by remember { mutableStateOf<WaterSource?>(null) }
+
+                    var pickedLatLng by remember { mutableStateOf<LatLng?>(null) }
+                    var isPickingLocationForNewWaterSource by remember { mutableStateOf(false) }
 
                     CompositionLocalProvider(value = LocalTheme provides DarkTheme(LocalTheme.current.isDark)) {
                         CheshMapTheme(darkTheme = LocalTheme.current.isDark) {
@@ -91,15 +97,45 @@ fun LendingView(
                                         latestUserLocation,
                                         waterSourceMarkers,
                                         isUserLocationTrackingEnabled,
+                                        isPickingLocationForNewWaterSource,
                                         showWaterSourceDetails = { waterSourceForDetails = it },
                                         fetchLatestUserLocation = { fetchUserLocation() },
-                                    )
-
-                                    ViewExpandableFloatingButton(
-                                        openScreenFromFab = {
-                                            currentScreen = it
+                                        confirmPickedLocation = {
+                                            isPickingLocationForNewWaterSource = false
+                                            pickedLatLng = it
+                                            currentScreen = Screen.ADD
+                                        },
+                                        cancelPickingLocationForNewWaterSource = {
+                                            isPickingLocationForNewWaterSource = false
                                         }
                                     )
+
+                                    AnimatedVisibility(
+                                        visible = !isPickingLocationForNewWaterSource,
+                                        enter = fadeIn(animationSpec = tween(durationMillis = 500)),
+                                        exit = fadeOut(animationSpec = tween(durationMillis = 500))
+                                    ) {
+                                        ViewExpandableFloatingButton(
+                                            openScreenFromFab = {
+                                                if (it != Screen.ADD) {
+                                                    currentScreen = it
+                                                } else {
+                                                    isPickingLocationForNewWaterSource = true
+                                                }
+                                            }
+                                        )
+                                    }
+
+                                    AnimatedVisibility(
+                                        visible = currentScreen == Screen.ADD,
+                                        enter = scaleIn(animationSpec = tween(durationMillis = 500)),
+                                        exit = scaleOut()
+                                    ) {
+                                        AddNewSourceView(
+                                            pickedLatLng,
+                                            onNavigateBack = { currentScreen = Screen.LENDING },
+                                        )
+                                    }
 
                                     AnimatedVisibility(
                                         visible = currentScreen == Screen.FAVOURITE,
@@ -122,7 +158,11 @@ fun LendingView(
                                             globalThemeState,
                                             isUserLocationTrackingEnabled,
                                             setGlobalThemeMode = { setGlobalThemeMode(it) },
-                                            setUserLocationTrackingEnabled = { setUserLocationTrackingEnabled(it) },
+                                            setUserLocationTrackingEnabled = {
+                                                setUserLocationTrackingEnabled(
+                                                    it
+                                                )
+                                            },
                                             onNavigateBack = { currentScreen = Screen.LENDING },
                                         )
                                     }

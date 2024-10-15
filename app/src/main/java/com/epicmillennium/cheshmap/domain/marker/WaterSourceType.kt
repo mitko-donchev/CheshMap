@@ -5,7 +5,8 @@ enum class WaterSourceType {
     URBAN_WATER,
     MINERAL_WATER,
     HOT_MINERAL_WATER,
-    SPRING_WATER;
+    SPRING_WATER,
+    NONE;
 
     companion object {
         fun fromOrdinal(ordinal: Int) = WaterSourceType.entries[ordinal]

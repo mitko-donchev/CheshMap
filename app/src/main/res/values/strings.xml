@@ -3,12 +3,32 @@
     <!-- Main strings -->
     <string name="app_name">CheshMap</string>
 
+    <!-- Form fields -->
+    <string name="name">Name</string>
+    <string name="latitude">Latitude*</string>
+    <string name="longitude">Longitude*</string>
+    <string name="ex_25_4858">Ex. 25.4858</string>
+    <string name="ex_42_7339">Ex. 42.7339</string>
+    <string name="select_type">Select Type*</string>
+    <string name="name_limits">Name %1$s / %2$s</string>
+    <string name="select_status">Select Status*</string>
+    <string name="ex_name">Ex. Public water fountain</string>
+    <string name="details_limits">Details %1$s / %2$s</string>
+    <string name="mandatory_field">* - Mandatory field</string>
+    <string name="ex_details">Ex. Clean and tasty water…</string>
+
     <!-- Buttons -->
+    <string name="use">Use</string>
+    <string name="retake">Retake</string>
+    <string name="take_a_photo">Take a photo</string>
+    <string name="pick_a_photo">Pick a photo</string>
     <string name="take_me_there">Take me there</string>
+    <string name="submit_water_source">Submit water source</string>
 
     <!-- Screen names -->
     <string name="settings">Settings</string>
     <string name="favourites">Favourites</string>
+    <string name="new_water_source">Add Water Source</string>
 
     <!-- Theme -->
     <string name="system_theme">System</string>
@@ -20,6 +40,14 @@
     <string name="other_settings">Other</string>
     <string name="privacy_settings">Privacy</string>
     <string name="track_my_location">Track My Location</string>
+
+    <!-- Permissions-->
+    <string name="camera_permission_is_required">Camera permission is required.</string>
+
+    <!-- Error messages -->
+    <string name="please_select_a_type">Please select a type</string>
+    <string name="please_select_a_status">Please select a status</string>
+    <string name="coordinate_is_outside_bulgaria">Coordinate is outside Bulgaria</string>
 
     <!-- Alert Dialogs -->
     <string name="ok">OK</string>
@@ -46,15 +74,28 @@
     <!-- Water source other -->
     <string name="type">Type</string>
     <string name="status">Status</string>
+    <string name="details">Details</string>
     <string name="type_with_columns">Type: %1$s</string>
     <string name="status_with_columns">Status: %1$s</string>
-    <string name="details">Details</string>
     <string name="coordinates">Coordinates: %1$s, %2$s</string>
 
     <!-- Content Description -->
     <string name="compass">Compass</string>
+    <string name="remove_photo">Remove photo</string>
+    <string name="expanded_fab">Expanded FAB</string>
+    <string name="collapsed_fab">Collapsed FAB</string>
+    <string name="close_details">Close details</string>
     <string name="navigate_back">Navigate back</string>
+    <string name="selected_photo">Selected photo</string>
     <string name="water_source_image">Water source image</string>
     <string name="center_on_user_location">Center on user location</string>
+    <string name="cancel_picking_location">Cancel picking location</string>
+    <string name="confirm_picked_location">Confirm picked location</string>
+    <string name="delete_source_button">Delete source button</string>
+    <string name="directions_button_icon">Directions button icon</string>
+    <string name="captured_image_preview">Captured image preview</string>
+    <string name="favourite_water_source_button">Favourite water source button</string>
+    <string name="un_favourite_water_source_button">Un-favourite water source button</string>
+    <string name="pick_location_for_new_water_source">Pick location for new water source</string>
 
 </resources>

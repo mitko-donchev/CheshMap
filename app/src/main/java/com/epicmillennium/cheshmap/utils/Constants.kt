@@ -8,15 +8,13 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 
 object Constants {
 
+    // Contact
+    const val CONTACT_EMAIL = "mail@mail.com"
+
     // Permissions
     val LOCATION_PERMISSIONS = listOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
-    )
-
-    val CAMERAX_PERMISSIONS = listOf(
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO,
     )
 
     // Firebase

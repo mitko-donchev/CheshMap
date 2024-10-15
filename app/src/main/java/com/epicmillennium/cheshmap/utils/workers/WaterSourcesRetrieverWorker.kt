@@ -10,6 +10,7 @@ import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.usecase.AddAllWaterSourcesUseCase
 import com.epicmillennium.cheshmap.utils.Constants.FAVOURITE_SOURCES
 import com.epicmillennium.cheshmap.utils.Constants.FIRESTORE_COLLECTION_WATER_SOURCES
+import com.epicmillennium.cheshmap.utils.clearAppCacheFromAttachments
 import com.epicmillennium.cheshmap.utils.preferences.UserPreferencesRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.assisted.Assisted
@@ -29,6 +30,10 @@ class WaterSourcesRetrieverWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
+            // Clear all attachments from app cache for optimisation
+            Log.v(this.toString(), "Clearing app cache from all attachments")
+            applicationContext.clearAppCacheFromAttachments()
+
             // Fetch data from Firestore synchronously (await)
             val data = firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
                 .get()

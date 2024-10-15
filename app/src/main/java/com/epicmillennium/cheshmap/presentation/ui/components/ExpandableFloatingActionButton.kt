@@ -45,7 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.presentation.ui.lending.Screen
 
 @Composable
@@ -174,12 +176,12 @@ private fun AnimatedIcon(currentState: ExpandableFabState) {
         if (targetState == ExpandableFabState.EXPANDED) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Expanded FAB",
+                contentDescription = stringResource(R.string.expanded_fab),
             )
         } else {
             Icon(
                 imageVector = Icons.Filled.Menu,
-                contentDescription = "Collapsed FAB",
+                contentDescription = stringResource(R.string.collapsed_fab),
             )
         }
     }
