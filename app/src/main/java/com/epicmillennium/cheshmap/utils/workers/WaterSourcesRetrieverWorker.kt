@@ -39,14 +39,14 @@ class WaterSourcesRetrieverWorker @AssistedInject constructor(
                 .get()
                 .await() // Use await to suspend and wait for the result
 
-            // Map Firestore data to your WaterSource domain model
+            // Map Firestore data to WaterSource domain model
             var waterSources = data.documents.mapNotNull { documentSnapshot ->
                 // Convert Firestore document to FirestoreWaterSource and include the document ID
                 val firestoreWaterSource =
                     documentSnapshot.toObject(FirestoreWaterSource::class.java)
                 firestoreWaterSource?.copy(id = documentSnapshot.id) // Use documentSnapshot.id as the Firestore ID
             }.map { firestoreWaterSource ->
-                // Convert FirestoreWaterSource to your domain model WaterSource
+                // Convert FirestoreWaterSource to domain model WaterSource
                 WaterSource.fromFirestoreWaterSource(firestoreWaterSource)
             }
 

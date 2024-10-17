@@ -23,7 +23,11 @@ data class WaterSourceEntity(
     val status: Int,
     val photos: List<String>,
     @ColumnInfo(defaultValue = 0.toString())
-    val isFavourite: Boolean = false
+    val isFavourite: Boolean = false,
+    @ColumnInfo(defaultValue = 0.toString())
+    val totalLikes: Long = 0,
+    @ColumnInfo(defaultValue = 0.toString())
+    val totalDislikes: Long = 0
 ) : Parcelable {
     companion object {
         fun fromWaterSource(waterSource: WaterSource) = WaterSourceEntity(
@@ -35,7 +39,9 @@ data class WaterSourceEntity(
             waterSource.type.ordinal,
             waterSource.status.ordinal,
             waterSource.photos.map { it.imageUrl },
-            waterSource.isFavourite
+            waterSource.isFavourite,
+            waterSource.totalLikes,
+            waterSource.totalDislikes
         )
 
         fun toWaterSource(waterSourceEntity: WaterSourceEntity) = WaterSource(
@@ -47,6 +53,8 @@ data class WaterSourceEntity(
             WaterSourceType.fromOrdinal(waterSourceEntity.type),
             WaterSourceStatus.fromOrdinal(waterSourceEntity.status),
             waterSourceEntity.photos.map { WaterSourcePhoto(it) },
+            waterSourceEntity.totalLikes,
+            waterSourceEntity.totalDislikes,
             waterSourceEntity.isFavourite
         )
     }

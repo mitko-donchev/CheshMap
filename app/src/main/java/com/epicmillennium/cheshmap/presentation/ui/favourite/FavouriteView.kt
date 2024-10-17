@@ -131,13 +131,14 @@ fun FavouriteView(
                 WaterSourceDetailsView(
                     waterSourceForDetails,
                     onCloseClick = { waterSourceForDetails = null },
+                    likeOrDislikeWaterSource = { _, _ -> },
+                    deleteWaterSource = {
+                    },
                     onFavouriteIconClick = { isFavourite, waterSource ->
                         setWaterSourceFavouriteState.invoke(
                             isFavourite,
                             waterSource
                         )
-                    },
-                    deleteWaterSource = {
                     }
                 )
             }

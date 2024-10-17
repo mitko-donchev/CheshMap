@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.epicmillennium.cheshmap.core.ui.theme.AppThemeMode
+import com.epicmillennium.cheshmap.domain.marker.FirestoreWaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.usecase.AddWaterSourceUseCase
 import com.epicmillennium.cheshmap.domain.usecase.DeleteWaterSourceByIdUseCase
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,6 +57,13 @@ class LendingViewModel @Inject constructor(
         viewModelScope,
         SharingStarted.WhileSubscribed(3000L),
         Location(0.0, 0.0)
+    )
+
+    private val _waterSourceInfo = MutableStateFlow<WaterSource?>(null)
+    val waterSourceInfo = _waterSourceInfo.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(3000L),
+        null
     )
 
     private val _waterSourceMarkers = MutableStateFlow(emptyList<WaterSource>())
@@ -144,6 +153,69 @@ class LendingViewModel @Inject constructor(
 
         addWaterSourceUseCase.invoke(waterSource.copy(isFavourite = isFavourite))
     }
+
+    fun fetchWaterSourceInfo(waterSourceId: String) = viewModelScope.launch(Dispatchers.IO) {
+        val documentSnapshot = firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
+            .document(waterSourceId)
+            .get()
+            .addOnFailureListener {
+                Log.e("LendingViewModel", "Error fetching water source info", it)
+            }
+            .await() // Use await to suspend and wait for the result
+
+        // Convert Firestore document to FirestoreWaterSource and include the document ID
+        val firestoreWaterSource = documentSnapshot.toObject(FirestoreWaterSource::class.java)
+
+        // Use documentSnapshot.id as the Firestore ID
+        val waterSourceWithId = firestoreWaterSource?.copy(id = documentSnapshot.id)
+
+        // Convert FirestoreWaterSource to domain model WaterSource and emit
+        val waterSource = WaterSource.fromFirestoreWaterSourceButCouldBeNull(waterSourceWithId)
+
+        Log.d("LendingViewModel", "Fetched water source info: $waterSource")
+        _waterSourceInfo.tryEmit(waterSource)
+    }
+
+    fun likeOrDislikeWaterSource(shouldLike: Boolean, waterSource: WaterSource) =
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d("LendingViewModel", "Should like: $shouldLike water source: $waterSource")
+
+            if (shouldLike) {
+                firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
+                    .document(waterSource.id)
+                    .update("totalLikes", waterSource.totalLikes + 1)
+                    .addOnSuccessListener {
+                        Log.d(
+                            "LendingViewModel",
+                            "Adding one like to ${waterSource.id}!"
+                        )
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(
+                            "LendingViewModel",
+                            "Error liking the water source",
+                            e
+                        )
+                    }
+            } else {
+                firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
+                    .document(waterSource.id)
+                    .update("totalDislikes", waterSource.totalDislikes + 1)
+                    .addOnSuccessListener {
+                        Log.d(
+                            "LendingViewModel",
+                            "Adding one like to ${waterSource.id}!"
+                        )
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(
+                            "LendingViewModel",
+                            "Error liking the water source",
+                            e
+                        )
+                    }
+            }
+        }
 
     fun deleteWaterSource(
         waterSource: WaterSource

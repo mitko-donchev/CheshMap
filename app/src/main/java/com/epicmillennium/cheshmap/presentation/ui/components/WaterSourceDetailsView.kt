@@ -3,7 +3,7 @@ package com.epicmillennium.cheshmap.presentation.ui.components
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.clickable
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -21,12 +22,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.ThumbUpOffAlt
+import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,7 +43,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +62,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.epicmillennium.cheshmap.BuildConfig
 import com.epicmillennium.cheshmap.R
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceStatus
@@ -61,134 +71,147 @@ import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
 fun WaterSourceDetailsView(
     waterSource: WaterSource?,
     onCloseClick: () -> Unit,
+    likeOrDislikeWaterSource: (Boolean, WaterSource) -> Unit,
     deleteWaterSource: (WaterSource) -> Unit,
     onFavouriteIconClick: (Boolean, WaterSource) -> Unit,
 ) {
-    waterSource ?: return
-
-    val context = LocalContext.current
-
-    val waterSourceStatus = stringResource(
-        when (waterSource.status) {
-            WaterSourceStatus.WORKING -> R.string.working
-            WaterSourceStatus.UNDER_CONSTRUCTION -> R.string.under_construction
-            WaterSourceStatus.OUT_OF_ORDER -> R.string.out_of_order
-            WaterSourceStatus.FOR_REVIEW -> R.string.for_review
-            WaterSourceStatus.NONE -> R.string.for_review
+    if (waterSource == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.size(48.dp)) {
+                CircularProgressIndicator()
+            }
         }
-    )
 
-    val waterSourceType = stringResource(
-        when (waterSource.type) {
-            WaterSourceType.ESTABLISHMENT -> R.string.establishment
-            WaterSourceType.URBAN_WATER -> R.string.urban_water_source
-            WaterSourceType.MINERAL_WATER -> R.string.mineral_water
-            WaterSourceType.HOT_MINERAL_WATER -> R.string.hot_mineral_water
-            WaterSourceType.SPRING_WATER -> R.string.spring_water
-            WaterSourceType.NONE -> R.string.urban_water_source
-        }
-    )
+        BackHandler { onCloseClick.invoke() }
+    } else {
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            DetailsTopBar(waterSource, onCloseClick = onCloseClick)
-        },
-        bottomBar = {
-            DetailsBottomBar(
-                context,
-                waterSource,
-                onFavouriteIconClick = { onFavouriteIconClick.invoke(it, waterSource) },
-                onDeleteIconClick = {
-                    deleteWaterSource.invoke(waterSource)
-                    onCloseClick.invoke()
-                }
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            // Image of the water source
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(if (waterSource.photos.isEmpty()) "" else waterSource.photos[0].imageUrl)
-                        .build(),
-                    placeholder = painterResource(id = R.drawable.no_image),
-                    error = painterResource(id = R.drawable.no_image),
-                    contentDescription = stringResource(R.string.water_source_image),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Fit
+        val context = LocalContext.current
+
+        val waterSourceStatus = stringResource(
+            when (waterSource.status) {
+                WaterSourceStatus.WORKING -> R.string.working
+                WaterSourceStatus.UNDER_CONSTRUCTION -> R.string.under_construction
+                WaterSourceStatus.OUT_OF_ORDER -> R.string.out_of_order
+                WaterSourceStatus.FOR_REVIEW -> R.string.for_review
+                WaterSourceStatus.NONE -> R.string.for_review
+            }
+        )
+
+        val waterSourceType = stringResource(
+            when (waterSource.type) {
+                WaterSourceType.ESTABLISHMENT -> R.string.establishment
+                WaterSourceType.URBAN_WATER -> R.string.urban_water_source
+                WaterSourceType.MINERAL_WATER -> R.string.mineral_water
+                WaterSourceType.HOT_MINERAL_WATER -> R.string.hot_mineral_water
+                WaterSourceType.SPRING_WATER -> R.string.spring_water
+                WaterSourceType.NONE -> R.string.urban_water_source
+            }
+        )
+
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                DetailsTopBar(waterSource,
+                    onCloseClick = onCloseClick,
+                    onFavouriteIconClick = { onFavouriteIconClick.invoke(it, waterSource) },
+                    onDeleteClick = {
+                        deleteWaterSource.invoke(waterSource)
+                        onCloseClick.invoke()
+                    }
+                )
+            },
+            bottomBar = {
+                DetailsBottomBar(
+                    context,
+                    waterSource,
+                    likeOrDislikeWaterSource = { likeOrDislikeWaterSource.invoke(it, waterSource) }
                 )
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyColumn(
+        ) { paddingValues ->
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+                    .padding(paddingValues)
             ) {
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                item {
-                    Text(
-                        text = stringResource(R.string.type),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    HorizontalDivider(
-                        thickness = 2.dp,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    Text(
-                        text = waterSourceType,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = stringResource(R.string.status),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    HorizontalDivider(
-                        thickness = 2.dp,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    Text(
-                        text = waterSourceStatus,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = stringResource(R.string.details),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    HorizontalDivider(
-                        thickness = 2.dp,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    Text(
-                        text = waterSource.details,
-                        style = MaterialTheme.typography.bodyMedium,
+                // Image of the water source
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(if (waterSource.photos.isEmpty()) "" else waterSource.photos[0].imageUrl)
+                            .build(),
+                        placeholder = painterResource(id = R.drawable.no_image),
+                        error = painterResource(id = R.drawable.no_image),
+                        contentDescription = stringResource(R.string.water_source_image),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Fit
                     )
                 }
 
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    item {
+                        Text(
+                            text = stringResource(R.string.type),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        HorizontalDivider(
+                            thickness = 2.dp,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = waterSourceType,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = stringResource(R.string.status),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        HorizontalDivider(
+                            thickness = 2.dp,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = waterSourceStatus,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = stringResource(R.string.details),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        HorizontalDivider(
+                            thickness = 2.dp,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = waterSource.details,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             }
         }
@@ -199,8 +222,14 @@ fun WaterSourceDetailsView(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun DetailsTopBar(
     waterSource: WaterSource,
-    onCloseClick: () -> Unit
+    onCloseClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onFavouriteIconClick: (Boolean) -> Unit,
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    var favouriteState by remember { mutableStateOf(waterSource.isFavourite) }
+
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -208,11 +237,57 @@ private fun DetailsTopBar(
                 modifier = Modifier.wrapContentWidth()
             )
         },
-        actions = {
+        navigationIcon = {
             IconButton(onClick = onCloseClick) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = stringResource(R.string.close_details)
+                )
+            }
+        },
+        actions = {
+            IconToggleButton(
+                checked = favouriteState,
+                onCheckedChange = {
+                    favouriteState = it
+                    onFavouriteIconClick.invoke(it)
+                }
+            ) {
+                if (favouriteState) {
+                    Icon(
+                        Icons.Default.Favorite,
+                        contentDescription = stringResource(R.string.favourite_water_source_button)
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.FavoriteBorder,
+                        contentDescription = stringResource(R.string.un_favourite_water_source_button),
+                    )
+                }
+            }
+
+            IconButton(onClick = { showMenu = !showMenu }) {
+                Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More menu")
+            }
+            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "Propose change",
+                            modifier = Modifier.padding(end = 16.dp)
+                        )
+                    },
+                    onClick = { }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "Delete",
+                            color = Color.Red,
+                            modifier = Modifier.padding(end = 16.dp)
+                        )
+                    },
+                    onClick = { onDeleteClick.invoke() }
                 )
             }
         },
@@ -227,46 +302,97 @@ private fun DetailsTopBar(
 private fun DetailsBottomBar(
     context: Context,
     waterSource: WaterSource,
-    onDeleteIconClick: () -> Unit,
-    onFavouriteIconClick: (Boolean) -> Unit,
+    likeOrDislikeWaterSource: (Boolean) -> Unit
 ) {
-    var favouriteState by remember { mutableStateOf(waterSource.isFavourite) }
+    var likedState by remember { mutableStateOf(false) }
+    var dislikedState by remember { mutableStateOf(false) }
+
+    val totalLikes by remember {
+        mutableStateOf(
+            formatLikedDisliked(
+                context,
+                waterSource.totalLikes
+            )
+        )
+    }
+
+    val totalDislikes by remember {
+        mutableStateOf(
+            formatLikedDisliked(
+                context,
+                waterSource.totalDislikes
+            )
+        )
+    }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(8.dp),
+            .padding(16.dp),
     ) {
-        // Will be only available in debug mode
-        if (BuildConfig.DEBUG) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                tint = Color.Red,
-                contentDescription = stringResource(R.string.delete_source_button),
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 32.dp)
-                    .clickable {
-                        onDeleteIconClick.invoke()
-                    }
-            )
-        }
-
-        IconToggleButton(
-            checked = favouriteState,
-            onCheckedChange = {
-                favouriteState = it
-                onFavouriteIconClick.invoke(it)
-            }
+        Surface(
+            shape = ButtonDefaults.outlinedShape,
+            border = ButtonDefaults.outlinedButtonBorder(true),
+            modifier = Modifier.align(Alignment.CenterStart)
         ) {
-            if (favouriteState) {
-                Icon(Icons.Default.Favorite, contentDescription = stringResource(R.string.favourite_water_source_button))
-            } else {
-                Icon(
-                    Icons.Default.FavoriteBorder,
-                    contentDescription = stringResource(R.string.un_favourite_water_source_button),
-                )
+            Row(
+                Modifier
+                    .height(ButtonDefaults.MinHeight)
+                    .wrapContentWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconToggleButton(
+                    checked = likedState,
+                    onCheckedChange = {
+                        if (!likedState) {
+                            dislikedState = false
+                            likedState = true
+                            likeOrDislikeWaterSource.invoke(true)
+                        }
+                    }
+                ) {
+                    if (likedState) {
+                        Icon(
+                            Icons.Default.ThumbUp,
+                            contentDescription = stringResource(R.string.favourite_water_source_button)
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.ThumbUpOffAlt,
+                            contentDescription = stringResource(R.string.un_favourite_water_source_button),
+                        )
+                    }
+                }
+
+                Text(text = totalLikes, modifier = Modifier.padding(end = 16.dp))
+
+                VerticalDivider(modifier = Modifier.height(16.dp), thickness = 2.dp)
+
+                IconToggleButton(
+                    checked = dislikedState,
+                    onCheckedChange = {
+                        if (!dislikedState) {
+                            likedState = false
+                            dislikedState = true
+                            likeOrDislikeWaterSource.invoke(false)
+                        }
+                    }
+                ) {
+                    if (dislikedState) {
+                        Icon(
+                            Icons.Default.ThumbDown,
+                            contentDescription = stringResource(R.string.favourite_water_source_button)
+                        )
+                    } else {
+                        Icon(
+                            Icons.Outlined.ThumbDown,
+                            contentDescription = stringResource(R.string.un_favourite_water_source_button),
+                        )
+                    }
+                }
+
+                Text(text = totalDislikes, modifier = Modifier.padding(end = 16.dp))
             }
         }
 
@@ -290,5 +416,17 @@ private fun DetailsBottomBar(
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = stringResource(R.string.take_me_there))
         }
+    }
+}
+
+private fun formatLikedDisliked(context: Context, number: Long): String {
+    return when {
+        number < 1000L -> number.toString()
+        number.toInt() in 1000L..999999L -> context.getString(
+            R.string.thousands,
+            (number / 1000L).toString()
+        )
+
+        else -> context.getString(R.string.milions, (number / 1000000L).toString())
     }
 }

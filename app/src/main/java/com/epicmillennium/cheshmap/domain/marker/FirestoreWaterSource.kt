@@ -14,4 +14,6 @@ data class FirestoreWaterSource(
     @Keep val type: String = "1",
     @Keep val status: String = "3",
     @Keep val photos: String = "none",
+    @Keep val totalLikes: Long = 0L,
+    @Keep val totalDislikes: Long = 0L,
 )

@@ -79,6 +79,10 @@
     <string name="status_with_columns">Status: %1$s</string>
     <string name="coordinates">Coordinates: %1$s, %2$s</string>
 
+    <!-- Other -->
+    <string name="milions">%1$sM</string>
+    <string name="thousands">%1$sK</string>
+
     <!-- Content Description -->
     <string name="compass">Compass</string>
     <string name="remove_photo">Remove photo</string>

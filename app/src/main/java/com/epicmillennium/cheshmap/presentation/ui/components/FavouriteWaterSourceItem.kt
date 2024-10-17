@@ -105,7 +105,9 @@ fun FavouriteWaterSourceItemPreview() {
             status = WaterSourceStatus.WORKING,
             photos = emptyList(),
             isFavourite = true,
-            details = "This is a water source"
+            details = "This is a water source",
+            totalLikes = 0,
+            totalDislikes = 0,
         ),
         onFavouriteIconClick = {},
         onFavItemClicked = {}

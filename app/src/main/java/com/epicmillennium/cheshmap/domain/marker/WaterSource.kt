@@ -8,13 +8,15 @@ data class WaterSource(
     val id: String,
     val name: String,
 
-    // Marker Details
+    // Water Source Details
     val details: String,
     val latitude: Double,
     val longitude: Double,
     val type: WaterSourceType,
     val status: WaterSourceStatus,
     val photos: List<WaterSourcePhoto>,
+    val totalLikes: Long,
+    val totalDislikes: Long,
 
     // Other
     val isFavourite: Boolean = false
@@ -28,8 +30,27 @@ data class WaterSource(
             firestoreWaterSource.longitude.toDouble(),
             WaterSourceType.fromFirestoreString(firestoreWaterSource.type),
             WaterSourceStatus.fromFirestoreString(firestoreWaterSource.status),
-            processPhotosString(firestoreWaterSource.photos)
+            processPhotosString(firestoreWaterSource.photos),
+            firestoreWaterSource.totalLikes,
+            firestoreWaterSource.totalDislikes
         )
+
+        fun fromFirestoreWaterSourceButCouldBeNull(firestoreWaterSource: FirestoreWaterSource?): WaterSource? {
+            firestoreWaterSource ?: return null
+
+            return WaterSource(
+                firestoreWaterSource.id,
+                firestoreWaterSource.name,
+                firestoreWaterSource.details,
+                firestoreWaterSource.latitude.toDouble(),
+                firestoreWaterSource.longitude.toDouble(),
+                WaterSourceType.fromFirestoreString(firestoreWaterSource.type),
+                WaterSourceStatus.fromFirestoreString(firestoreWaterSource.status),
+                processPhotosString(firestoreWaterSource.photos),
+                firestoreWaterSource.totalLikes,
+                firestoreWaterSource.totalDislikes
+            )
+        }
 
         private fun processPhotosString(photosString: String?): List<WaterSourcePhoto> {
             val googleDrivePattern = "https://drive.google.com/open?id="

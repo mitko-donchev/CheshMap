@@ -48,12 +48,15 @@ fun LendingView(
     uiState: LendingViewState,
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
+    waterSourceInfo: WaterSource?,
     globalThemeState: AppThemeMode,
     isUserLocationTrackingEnabled: Boolean,
     setGlobalThemeMode: (AppThemeMode) -> Job,
     setUserLocationTrackingEnabled: (Boolean) -> Job,
     fetchUserLocation: () -> Job,
     fetchLatestUserData: () -> Job,
+    fetchWaterSources: (String) -> Job,
+    likeOrDislikeWaterSource: (Boolean, WaterSource) -> Job,
     deleteWaterSource: (WaterSource) -> Job,
     setWaterSourceFavouriteState: (Boolean, WaterSource) -> Job
 ) {
@@ -83,7 +86,7 @@ fun LendingView(
                 is LendingViewContentState.Success -> {
                     var currentScreen by remember { mutableStateOf(Screen.LENDING) }
 
-                    var waterSourceForDetails by remember { mutableStateOf<WaterSource?>(null) }
+                    var shouldLoadWaterSourceInfo by remember { mutableStateOf(false) }
 
                     var pickedLatLng by remember { mutableStateOf<LatLng?>(null) }
                     var isPickingLocationForNewWaterSource by remember { mutableStateOf(false) }
@@ -98,7 +101,10 @@ fun LendingView(
                                         waterSourceMarkers,
                                         isUserLocationTrackingEnabled,
                                         isPickingLocationForNewWaterSource,
-                                        showWaterSourceDetails = { waterSourceForDetails = it },
+                                        showWaterSourceDetails = {
+                                            shouldLoadWaterSourceInfo = true
+                                            fetchWaterSources.invoke(it.id)
+                                        },
                                         fetchLatestUserLocation = { fetchUserLocation() },
                                         confirmPickedLocation = {
                                             isPickingLocationForNewWaterSource = false
@@ -168,13 +174,21 @@ fun LendingView(
                                     }
 
                                     AnimatedVisibility(
-                                        visible = waterSourceForDetails != null,
+                                        visible = shouldLoadWaterSourceInfo,
                                         enter = scaleIn(animationSpec = tween(durationMillis = 500)),
                                         exit = scaleOut()
                                     ) {
                                         WaterSourceDetailsView(
-                                            waterSourceForDetails,
-                                            onCloseClick = { waterSourceForDetails = null },
+                                            waterSourceInfo,
+                                            likeOrDislikeWaterSource = { isFavourite, waterSource ->
+                                                likeOrDislikeWaterSource(
+                                                    isFavourite,
+                                                    waterSource
+                                                )
+                                            },
+                                            onCloseClick = {
+                                                shouldLoadWaterSourceInfo = false
+                                                           },
                                             onFavouriteIconClick = { isFavourite, waterSource ->
                                                 setWaterSourceFavouriteState.invoke(
                                                     isFavourite,
