@@ -82,9 +82,9 @@ import com.composables.core.MenuContent
 import com.composables.core.MenuItem
 import com.composables.core.rememberMenuState
 import com.epicmillennium.cheshmap.R
-import com.epicmillennium.cheshmap.core.ui.theme.CheshMapTheme
-import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
-import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
+import com.epicmillennium.cheshmap.presentation.theme.CheshMapTheme
+import com.epicmillennium.cheshmap.presentation.theme.DarkTheme
+import com.epicmillennium.cheshmap.presentation.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceStatus
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
 import com.epicmillennium.cheshmap.presentation.ui.camera.CameraView

@@ -7,7 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.epicmillennium.cheshmap.domain.marker.FirestoreWaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
-import com.epicmillennium.cheshmap.domain.usecase.AddAllWaterSourcesUseCase
+import com.epicmillennium.cheshmap.domain.usecase.watersource.AddAllWaterSourcesUseCase
 import com.epicmillennium.cheshmap.utils.Constants.FAVOURITE_SOURCES
 import com.epicmillennium.cheshmap.utils.Constants.FIRESTORE_COLLECTION_WATER_SOURCES
 import com.epicmillennium.cheshmap.utils.clearAppCacheFromAttachments

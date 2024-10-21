@@ -1,6 +1,5 @@
-package com.epicmillennium.cheshmap.data.source.room
+package com.epicmillennium.cheshmap.data.source.room.db
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -10,12 +9,8 @@ import com.epicmillennium.cheshmap.data.source.room.entity.WaterSourceEntity
 
 @TypeConverters(StringListConverter::class)
 @Database(
-    version = 3,
+    version = 1,
     entities = [WaterSourceEntity::class],
-    autoMigrations = [
-        AutoMigration (from = 1, to = 2),
-        AutoMigration (from = 2, to = 3)
-    ]
 )
 abstract class WaterSourcesDatabase : RoomDatabase() {
     abstract fun waterSourcesDao(): WaterSourcesDao

@@ -32,17 +32,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.epicmillennium.cheshmap.R
-import com.epicmillennium.cheshmap.core.ui.theme.CheshMapTheme
-import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
-import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
+import com.epicmillennium.cheshmap.domain.auth.User
+import com.epicmillennium.cheshmap.presentation.theme.CheshMapTheme
+import com.epicmillennium.cheshmap.presentation.theme.DarkTheme
+import com.epicmillennium.cheshmap.presentation.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.presentation.ui.components.FavouriteWaterSourceItem
 import com.epicmillennium.cheshmap.presentation.ui.components.WaterSourceDetailsView
+import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 import kotlinx.coroutines.Job
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavouriteView(
+    navigationActions: AppNavigationActions,
+    hasUser: Boolean,
+    currentUser: User?,
     favouriteWaterSources: List<WaterSource>,
     onNavigateBack: () -> Unit,
     setWaterSourceFavouriteState: (Boolean, WaterSource) -> Job,
@@ -129,6 +134,9 @@ fun FavouriteView(
                 exit = scaleOut()
             ) {
                 WaterSourceDetailsView(
+                    navigationActions,
+                    hasUser,
+                    currentUser,
                     waterSourceForDetails,
                     onCloseClick = { waterSourceForDetails = null },
                     likeOrDislikeWaterSource = { _, _ -> },

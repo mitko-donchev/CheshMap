@@ -23,11 +23,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.epicmillennium.cheshmap.core.ui.theme.AppThemeMode
-import com.epicmillennium.cheshmap.core.ui.theme.CheshMapTheme
-import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
-import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
+import com.epicmillennium.cheshmap.domain.auth.User
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
+import com.epicmillennium.cheshmap.presentation.theme.AppThemeMode
+import com.epicmillennium.cheshmap.presentation.theme.CheshMapTheme
+import com.epicmillennium.cheshmap.presentation.theme.DarkTheme
+import com.epicmillennium.cheshmap.presentation.theme.LocalTheme
 import com.epicmillennium.cheshmap.presentation.ui.add.AddNewSourceView
 import com.epicmillennium.cheshmap.presentation.ui.components.ViewExpandableFloatingButton
 import com.epicmillennium.cheshmap.presentation.ui.components.WaterSourceDetailsView
@@ -35,6 +36,7 @@ import com.epicmillennium.cheshmap.presentation.ui.components.maps.GoogleMaps
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.isLocationValid
 import com.epicmillennium.cheshmap.presentation.ui.favourite.FavouriteView
+import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 import com.epicmillennium.cheshmap.presentation.ui.settings.SettingsView
 import com.epicmillennium.cheshmap.utils.Constants.LOCATION_PERMISSIONS
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -45,7 +47,12 @@ import kotlinx.coroutines.Job
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LendingView(
+    waterSourceId: String,
+    pickingLocationForNewWaterSource: Boolean,
+    navigationActions: AppNavigationActions,
     uiState: LendingViewState,
+    hasUser: Boolean,
+    currentUser: User?,
     latestUserLocation: Location,
     waterSourceMarkers: List<WaterSource>,
     waterSourceInfo: WaterSource?,
@@ -55,8 +62,8 @@ fun LendingView(
     setUserLocationTrackingEnabled: (Boolean) -> Job,
     fetchUserLocation: () -> Job,
     fetchLatestUserData: () -> Job,
-    fetchWaterSources: (String) -> Job,
-    likeOrDislikeWaterSource: (Boolean, WaterSource) -> Job,
+    fetchWaterSourceInfo: (String) -> Job,
+    likeOrDislikeWaterSource: (Boolean, Boolean) -> Job,
     deleteWaterSource: (WaterSource) -> Job,
     setWaterSourceFavouriteState: (Boolean, WaterSource) -> Job
 ) {
@@ -89,7 +96,14 @@ fun LendingView(
                     var shouldLoadWaterSourceInfo by remember { mutableStateOf(false) }
 
                     var pickedLatLng by remember { mutableStateOf<LatLng?>(null) }
-                    var isPickingLocationForNewWaterSource by remember { mutableStateOf(false) }
+                    var isPickingLocationForNewWaterSource by remember { mutableStateOf(pickingLocationForNewWaterSource) }
+
+                    LaunchedEffect(Unit) {
+                        if (waterSourceId.isNotEmpty()) {
+                            shouldLoadWaterSourceInfo = true
+                            fetchWaterSourceInfo.invoke(waterSourceId)
+                        }
+                    }
 
                     CompositionLocalProvider(value = LocalTheme provides DarkTheme(LocalTheme.current.isDark)) {
                         CheshMapTheme(darkTheme = LocalTheme.current.isDark) {
@@ -103,7 +117,7 @@ fun LendingView(
                                         isPickingLocationForNewWaterSource,
                                         showWaterSourceDetails = {
                                             shouldLoadWaterSourceInfo = true
-                                            fetchWaterSources.invoke(it.id)
+                                            fetchWaterSourceInfo.invoke(it.id)
                                         },
                                         fetchLatestUserLocation = { fetchUserLocation() },
                                         confirmPickedLocation = {
@@ -126,7 +140,11 @@ fun LendingView(
                                                 if (it != Screen.ADD) {
                                                     currentScreen = it
                                                 } else {
-                                                    isPickingLocationForNewWaterSource = true
+                                                    if (hasUser) {
+                                                        isPickingLocationForNewWaterSource = true
+                                                    } else {
+                                                        navigationActions.navigateToLogin()
+                                                    }
                                                 }
                                             }
                                         )
@@ -149,6 +167,9 @@ fun LendingView(
                                         exit = scaleOut()
                                     ) {
                                         FavouriteView(
+                                            navigationActions,
+                                            hasUser,
+                                            currentUser,
                                             favouriteWaterSources = waterSourceMarkers.filter { it.isFavourite },
                                             onNavigateBack = { currentScreen = Screen.LENDING },
                                             setWaterSourceFavouriteState = setWaterSourceFavouriteState
@@ -179,16 +200,16 @@ fun LendingView(
                                         exit = scaleOut()
                                     ) {
                                         WaterSourceDetailsView(
+                                            navigationActions,
+                                            hasUser,
+                                            currentUser,
                                             waterSourceInfo,
-                                            likeOrDislikeWaterSource = { isFavourite, waterSource ->
-                                                likeOrDislikeWaterSource(
-                                                    isFavourite,
-                                                    waterSource
-                                                )
+                                            likeOrDislikeWaterSource = { shouldLike, shouldReset ->
+                                                likeOrDislikeWaterSource.invoke(shouldLike, shouldReset)
                                             },
                                             onCloseClick = {
                                                 shouldLoadWaterSourceInfo = false
-                                                           },
+                                            },
                                             onFavouriteIconClick = { isFavourite, waterSource ->
                                                 setWaterSourceFavouriteState.invoke(
                                                     isFavourite,

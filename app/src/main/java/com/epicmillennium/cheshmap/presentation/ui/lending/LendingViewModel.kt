@@ -6,15 +6,22 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.epicmillennium.cheshmap.core.ui.theme.AppThemeMode
+import com.epicmillennium.cheshmap.domain.auth.FirestoreUser
+import com.epicmillennium.cheshmap.domain.auth.User
 import com.epicmillennium.cheshmap.domain.marker.FirestoreWaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
-import com.epicmillennium.cheshmap.domain.usecase.AddWaterSourceUseCase
-import com.epicmillennium.cheshmap.domain.usecase.DeleteWaterSourceByIdUseCase
-import com.epicmillennium.cheshmap.domain.usecase.GetAllWaterSourcesUseCase
+import com.epicmillennium.cheshmap.domain.usecase.auth.HasUserUseCase
+import com.epicmillennium.cheshmap.domain.usecase.user.GetUserUseCase
+import com.epicmillennium.cheshmap.domain.usecase.user.InsertUserUseCase
+import com.epicmillennium.cheshmap.domain.usecase.watersource.AddWaterSourceUseCase
+import com.epicmillennium.cheshmap.domain.usecase.watersource.DeleteWaterSourceByIdUseCase
+import com.epicmillennium.cheshmap.domain.usecase.watersource.GetAllWaterSourcesUseCase
+import com.epicmillennium.cheshmap.domain.usecase.watersource.GetWaterSourceByIdUseCase
+import com.epicmillennium.cheshmap.presentation.theme.AppThemeMode
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.GPSService
 import com.epicmillennium.cheshmap.presentation.ui.components.maps.Location
 import com.epicmillennium.cheshmap.utils.Constants.FAVOURITE_SOURCES
+import com.epicmillennium.cheshmap.utils.Constants.FIRESTORE_COLLECTION_USERS
 import com.epicmillennium.cheshmap.utils.Constants.FIRESTORE_COLLECTION_WATER_SOURCES
 import com.epicmillennium.cheshmap.utils.Constants.GLOBAL_THEME_MODE_KEY
 import com.epicmillennium.cheshmap.utils.Constants.USER_LOCATION_TRACKING_ENABLED_KEY
@@ -37,10 +44,14 @@ import javax.inject.Inject
 class LendingViewModel @Inject constructor(
     private val gpsService: GPSService,
     private val firestore: FirebaseFirestore,
+    private val insertUserUseCase: InsertUserUseCase,
     private val addWaterSourceUseCase: AddWaterSourceUseCase,
+    private val getWaterSourceByIdUseCase: GetWaterSourceByIdUseCase,
     private val getAllWaterSourcesUseCase: GetAllWaterSourcesUseCase,
     private val userPreferencesRepository: UserPreferencesRepository,
-    private val deleteWaterSourceByIdUseCase: DeleteWaterSourceByIdUseCase
+    private val deleteWaterSourceByIdUseCase: DeleteWaterSourceByIdUseCase,
+    private val hasUserUseCase: HasUserUseCase,
+    private val getUserUseCase: GetUserUseCase
 ) : ViewModel() {
 
     private val _lendingUiState =
@@ -50,6 +61,24 @@ class LendingViewModel @Inject constructor(
             viewModelScope,
             SharingStarted.WhileSubscribed(3000L),
             LendingViewState(LendingViewContentState.Loading)
+        )
+
+    private val _hasUser = MutableStateFlow(false)
+    val hasUser = _hasUser
+        .onStart { fetchHasUser() }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(3000L),
+            false
+        )
+
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser = _currentUser
+        .onStart { fetchCurrentUser() }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(3000L),
+            null
         )
 
     private val _userLocation = MutableStateFlow(Location(0.0, 0.0))
@@ -155,65 +184,79 @@ class LendingViewModel @Inject constructor(
     }
 
     fun fetchWaterSourceInfo(waterSourceId: String) = viewModelScope.launch(Dispatchers.IO) {
-        val documentSnapshot = firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
-            .document(waterSourceId)
-            .get()
-            .addOnFailureListener {
-                Log.e("LendingViewModel", "Error fetching water source info", it)
+        updateWaterSourceInfo(waterSourceId)
+
+        getWaterSourceByIdUseCase.invoke(waterSourceId).fold({ waterSource ->
+            waterSource.collectLatest {
+                _waterSourceInfo.tryEmit(it)
             }
-            .await() // Use await to suspend and wait for the result
-
-        // Convert Firestore document to FirestoreWaterSource and include the document ID
-        val firestoreWaterSource = documentSnapshot.toObject(FirestoreWaterSource::class.java)
-
-        // Use documentSnapshot.id as the Firestore ID
-        val waterSourceWithId = firestoreWaterSource?.copy(id = documentSnapshot.id)
-
-        // Convert FirestoreWaterSource to domain model WaterSource and emit
-        val waterSource = WaterSource.fromFirestoreWaterSourceButCouldBeNull(waterSourceWithId)
-
-        Log.d("LendingViewModel", "Fetched water source info: $waterSource")
-        _waterSourceInfo.tryEmit(waterSource)
+        }, { error ->
+            Log.e("LendingViewModel", "Error fetching water source info", error)
+        })
     }
 
-    fun likeOrDislikeWaterSource(shouldLike: Boolean, waterSource: WaterSource) =
+    fun likeOrDislikeWaterSource(shouldLike: Boolean, shouldReset: Boolean) =
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("LendingViewModel", "Should like: $shouldLike water source: $waterSource")
+            Log.d(
+                "LendingViewModel",
+                "Should like: $shouldLike water source: ${waterSourceInfo.value}"
+            )
 
-            if (shouldLike) {
-                firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
-                    .document(waterSource.id)
-                    .update("totalLikes", waterSource.totalLikes + 1)
-                    .addOnSuccessListener {
-                        Log.d(
-                            "LendingViewModel",
-                            "Adding one like to ${waterSource.id}!"
-                        )
+            try {
+                val currentUser = currentUser.value ?: return@launch
+                val waterSource = waterSourceInfo.value ?: return@launch
+
+                val getIfItsAlreadyLiked = currentUser.likedSourcesIds.contains(waterSource.id)
+                val getIfItsAlreadyDisliked =
+                    currentUser.dislikedSourcesIds.contains(waterSource.id)
+
+                if (shouldLike && getIfItsAlreadyLiked) return@launch
+                if (!shouldLike && getIfItsAlreadyDisliked) return@launch
+
+                if (getIfItsAlreadyLiked && (waterSource.totalLikes - 1 < 0)) return@launch
+                if (getIfItsAlreadyDisliked && (waterSource.totalDislikes - 1 < 0)) return@launch
+
+                val likedSourcesIds = currentUser.likedSourcesIds.toMutableList()
+                val dislikedSourcesIds = currentUser.dislikedSourcesIds.toMutableList()
+
+                if (shouldLike) {
+                    if (!shouldReset) {
+                        likedSourcesIds.add(waterSource.id)
                     }
-                    .addOnFailureListener { e ->
-                        Log.e(
-                            "LendingViewModel",
-                            "Error liking the water source",
-                            e
-                        )
+                    dislikedSourcesIds.remove(waterSource.id)
+                } else {
+                    if (!shouldReset) {
+                        dislikedSourcesIds.add(waterSource.id)
                     }
-            } else {
-                firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
-                    .document(waterSource.id)
-                    .update("totalDislikes", waterSource.totalDislikes + 1)
-                    .addOnSuccessListener {
-                        Log.d(
-                            "LendingViewModel",
-                            "Adding one like to ${waterSource.id}!"
-                        )
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e(
-                            "LendingViewModel",
-                            "Error liking the water source",
-                            e
-                        )
-                    }
+                    likedSourcesIds.remove(waterSource.id)
+                }
+
+                val updatedUser = currentUser.copy(
+                    likedSourcesIds = likedSourcesIds,
+                    dislikedSourcesIds = dislikedSourcesIds
+                )
+
+                val updatedWaterSource = waterSource.copy(
+                    totalLikes = getTotalLikes(
+                        shouldLike,
+                        shouldReset,
+                        waterSource,
+                        getIfItsAlreadyLiked
+                    ),
+                    totalDislikes = getTotalDislikes(
+                        shouldLike,
+                        shouldReset,
+                        waterSource,
+                        getIfItsAlreadyDisliked
+                    )
+                )
+
+                updateWaterSourceFirestoreData(
+                    updatedUser,
+                    updatedWaterSource
+                )
+            } catch (e: Exception) {
+                Log.e("LendingViewModel", "Error liking the water source", e)
             }
         }
 
@@ -256,6 +299,29 @@ class LendingViewModel @Inject constructor(
         )
     }
 
+    private fun updateWaterSourceInfo(waterSourceId: String) =
+        viewModelScope.launch(Dispatchers.IO) {
+            val documentSnapshot = firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
+                .document(waterSourceId)
+                .get()
+                .addOnFailureListener {
+                    Log.e("LendingViewModel", "Error fetching water source info", it)
+                }
+                .await() // Use await to suspend and wait for the result
+
+            // Convert Firestore document to FirestoreWaterSource and include the document ID
+            val firestoreWaterSource = documentSnapshot.toObject(FirestoreWaterSource::class.java)
+
+            // Use documentSnapshot.id as the Firestore ID
+            val waterSourceWithId = firestoreWaterSource?.copy(id = documentSnapshot.id)
+
+            // Convert FirestoreWaterSource to domain model WaterSource and emit
+            val waterSource = WaterSource.fromFirestoreWaterSourceButCouldBeNull(waterSourceWithId)
+
+            Log.d("LendingViewModel", "Fetched water source info: $waterSource")
+            waterSource?.let { addWaterSourceUseCase.invoke(it) }
+        }
+
     private fun loadWaterSourceMarkers() = viewModelScope.launch(Dispatchers.IO) {
         Log.v("Heavy methods logs", "Fetching latest water sources")
 
@@ -287,6 +353,136 @@ class LendingViewModel @Inject constructor(
             _isUserLocationTrackingEnabled.value = it
         }
     }
+
+    private fun fetchHasUser() = viewModelScope.launch {
+        hasUserUseCase().fold({ hasUser ->
+            _hasUser.emit(hasUser)
+        }, { error ->
+            Log.e("LendingViewModel", "Error fetching user", error)
+        })
+    }
+
+    private fun fetchCurrentUser() = viewModelScope.launch {
+        getUserUseCase.invoke().fold({ user ->
+            user.collectLatest {
+                _currentUser.emit(it)
+            }
+        }, { error ->
+            Log.e("LendingViewModel", "Error fetching user", error)
+        })
+    }
+
+    private fun updateUserFirestoreData(currentUser: User) {
+        firestore.collection(FIRESTORE_COLLECTION_USERS)
+            .document(currentUser.documentId)
+            .update(
+                "liked", currentUser.likedSourcesIds,
+                "disliked", currentUser.dislikedSourcesIds
+            )
+            .addOnSuccessListener {
+                updateCurrentUser(currentUser.uid)
+            }
+            .addOnFailureListener { e ->
+                Log.e(
+                    "LendingViewModel",
+                    "Error liking the water source",
+                    e
+                )
+            }
+    }
+
+    private suspend fun updateWaterSourceFirestoreData(
+        updatedUser: User,
+        updatedWaterSource: WaterSource
+    ) {
+        firestore.collection(FIRESTORE_COLLECTION_WATER_SOURCES)
+            .document(updatedWaterSource.id)
+            .update(
+                "totalLikes",
+                updatedWaterSource.totalLikes,
+                "totalDislikes",
+                updatedWaterSource.totalDislikes
+            )
+            .addOnSuccessListener {
+                Log.d(
+                    "LendingViewModel",
+                    "Adding one like to ${updatedWaterSource.id}!"
+                )
+
+                updateWaterSourceInfo(updatedWaterSource.id)
+
+                updateUserFirestoreData(updatedUser)
+            }
+            .addOnFailureListener { e ->
+                Log.e(
+                    "LendingViewModel",
+                    "Error liking the water source",
+                    e
+                )
+            }
+            .await()
+    }
+
+    private fun updateCurrentUser(uid: String) = viewModelScope.launch(Dispatchers.IO) {
+        if (uid.isEmpty()) return@launch
+
+        val data = firestore.collection(FIRESTORE_COLLECTION_USERS)
+            .whereEqualTo("uid", uid)
+            .get()
+            .addOnFailureListener {
+                Log.d("MainViewModel", "Error fetching current user")
+            }
+            .await() // Use await to suspend and wait for the result
+
+        val convertedUsers = data.documents.map { documentSnapshot ->
+            val firestoreUser = documentSnapshot.toObject(FirestoreUser::class.java)
+
+            val convUser =
+                User.fromFirestoreUserButCouldBeNull(firestoreUser) ?: return@map null
+
+            convUser.copy(documentId = documentSnapshot.id)
+        }
+
+        if (convertedUsers.isEmpty()) return@launch
+
+        val convertedUser = convertedUsers.first()
+
+        convertedUser?.let {
+            insertUserUseCase.invoke(it).fold({
+                Log.d("MainViewModel", "User inserted")
+            }, {
+                Log.d("MainViewModel", "Error inserting user")
+            })
+        }
+    }
+
+    private fun getTotalLikes(
+        shouldLike: Boolean,
+        shouldReset: Boolean,
+        waterSource: WaterSource,
+        getIfItsAlreadyLiked: Boolean
+    ) =
+        when {
+            shouldReset && !shouldLike -> waterSource.totalLikes - 1
+            shouldReset && shouldLike -> waterSource.totalLikes
+            shouldLike -> waterSource.totalLikes + 1
+            getIfItsAlreadyLiked -> waterSource.totalLikes - 1
+            else -> waterSource.totalLikes
+        }
+
+    private fun getTotalDislikes(
+        shouldLike: Boolean,
+        shouldReset: Boolean,
+        waterSource: WaterSource,
+        getIfItsAlreadyDisliked: Boolean
+    ) =
+        when {
+            shouldReset && shouldLike -> waterSource.totalDislikes - 1
+            shouldReset && !shouldLike -> waterSource.totalDislikes
+            !shouldLike -> waterSource.totalDislikes + 1
+            getIfItsAlreadyDisliked -> waterSource.totalDislikes - 1
+            else -> waterSource.totalDislikes
+        }
 }
 
 @Immutable

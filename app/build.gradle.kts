@@ -100,6 +100,12 @@ dependencies {
     implementation(libs.google.maps.compose.widgets)
     implementation(libs.google.play.services.android.location)
 
+    // Auth
+    implementation(libs.googleid)
+    implementation(libs.play.services.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+
     // Navigation
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
@@ -130,6 +136,7 @@ dependencies {
     // Firebase
     implementation(libs.firebase.storage)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth.ktx)
     implementation(platform(libs.firebase.bom))
 
     // Gson

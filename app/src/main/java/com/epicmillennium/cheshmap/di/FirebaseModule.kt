@@ -1,6 +1,8 @@
 package com.epicmillennium.cheshmap.di
 
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
@@ -17,9 +19,13 @@ class FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideFirestore(): FirebaseFirestore = Firebase.firestore
+    fun provideAuth(): FirebaseAuth = Firebase.auth
 
     @Provides
     @Singleton
     fun provideStorage(): FirebaseStorage = Firebase.storage
+
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = Firebase.firestore
 }

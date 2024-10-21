@@ -54,7 +54,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -63,15 +62,20 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.epicmillennium.cheshmap.R
+import com.epicmillennium.cheshmap.domain.auth.User
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceStatus
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
+import com.epicmillennium.cheshmap.presentation.ui.navigation.AppNavigationActions
 
 @Composable
 fun WaterSourceDetailsView(
+    navigationActions: AppNavigationActions,
+    hasUser: Boolean,
+    currentUser: User?,
     waterSource: WaterSource?,
     onCloseClick: () -> Unit,
-    likeOrDislikeWaterSource: (Boolean, WaterSource) -> Unit,
+    likeOrDislikeWaterSource: (Boolean, Boolean) -> Unit,
     deleteWaterSource: (WaterSource) -> Unit,
     onFavouriteIconClick: (Boolean, WaterSource) -> Unit,
 ) {
@@ -111,7 +115,8 @@ fun WaterSourceDetailsView(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                DetailsTopBar(waterSource,
+                DetailsTopBar(
+                    waterSource,
                     onCloseClick = onCloseClick,
                     onFavouriteIconClick = { onFavouriteIconClick.invoke(it, waterSource) },
                     onDeleteClick = {
@@ -123,8 +128,11 @@ fun WaterSourceDetailsView(
             bottomBar = {
                 DetailsBottomBar(
                     context,
+                    hasUser,
+                    currentUser,
                     waterSource,
-                    likeOrDislikeWaterSource = { likeOrDislikeWaterSource.invoke(it, waterSource) }
+                    onLoginRequired = { navigationActions.navigateToLogin(waterSource.id) },
+                    likeOrDislikeWaterSource = { shouldLike, shouldReset -> likeOrDislikeWaterSource.invoke(shouldLike, shouldReset) }
                 )
             }
         ) { paddingValues ->
@@ -279,16 +287,16 @@ private fun DetailsTopBar(
                     },
                     onClick = { }
                 )
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = "Delete",
-                            color = Color.Red,
-                            modifier = Modifier.padding(end = 16.dp)
-                        )
-                    },
-                    onClick = { onDeleteClick.invoke() }
-                )
+//                DropdownMenuItem(
+//                    text = {
+//                        Text(
+//                            text = "Delete",
+//                            color = Color.Red,
+//                            modifier = Modifier.padding(end = 16.dp)
+//                        )
+//                    },
+//                    onClick = { onDeleteClick.invoke() }
+//                )
             }
         },
         windowInsets = WindowInsets(
@@ -301,29 +309,26 @@ private fun DetailsTopBar(
 @Composable
 private fun DetailsBottomBar(
     context: Context,
+    hasUser: Boolean,
+    currentUser: User?,
     waterSource: WaterSource,
-    likeOrDislikeWaterSource: (Boolean) -> Unit
+    onLoginRequired: () -> Unit,
+    likeOrDislikeWaterSource: (Boolean, Boolean) -> Unit
 ) {
-    var likedState by remember { mutableStateOf(false) }
-    var dislikedState by remember { mutableStateOf(false) }
+    val likedState = currentUser?.likedSourcesIds?.contains(waterSource.id) ?: false
+    val dislikedState = currentUser?.dislikedSourcesIds?.contains(waterSource.id) ?: false
 
-    val totalLikes by remember {
-        mutableStateOf(
-            formatLikedDisliked(
-                context,
-                waterSource.totalLikes
-            )
+    val totalLikesFormated =
+        formatLikedDisliked(
+            context,
+            waterSource.totalLikes
         )
-    }
 
-    val totalDislikes by remember {
-        mutableStateOf(
-            formatLikedDisliked(
-                context,
-                waterSource.totalDislikes
-            )
+    val totalDislikesFormated =
+        formatLikedDisliked(
+            context,
+            waterSource.totalDislikes
         )
-    }
 
     Box(
         modifier = Modifier
@@ -345,10 +350,14 @@ private fun DetailsBottomBar(
                 IconToggleButton(
                     checked = likedState,
                     onCheckedChange = {
-                        if (!likedState) {
-                            dislikedState = false
-                            likedState = true
-                            likeOrDislikeWaterSource.invoke(true)
+                        if (currentUser != null) {
+                            if (!likedState) {
+                                likeOrDislikeWaterSource.invoke(true, false)
+                            } else {
+                                likeOrDislikeWaterSource.invoke(false, true)
+                            }
+                        } else {
+                            onLoginRequired.invoke()
                         }
                     }
                 ) {
@@ -365,17 +374,21 @@ private fun DetailsBottomBar(
                     }
                 }
 
-                Text(text = totalLikes, modifier = Modifier.padding(end = 16.dp))
+                Text(text = totalLikesFormated, modifier = Modifier.padding(end = 16.dp))
 
                 VerticalDivider(modifier = Modifier.height(16.dp), thickness = 2.dp)
 
                 IconToggleButton(
                     checked = dislikedState,
                     onCheckedChange = {
-                        if (!dislikedState) {
-                            likedState = false
-                            dislikedState = true
-                            likeOrDislikeWaterSource.invoke(false)
+                        if (currentUser != null) {
+                            if (!dislikedState) {
+                                likeOrDislikeWaterSource.invoke(false, false)
+                            } else {
+                                likeOrDislikeWaterSource.invoke(true, true)
+                            }
+                        } else {
+                            onLoginRequired.invoke()
                         }
                     }
                 ) {
@@ -392,7 +405,7 @@ private fun DetailsBottomBar(
                     }
                 }
 
-                Text(text = totalDislikes, modifier = Modifier.padding(end = 16.dp))
+                Text(text = totalDislikesFormated, modifier = Modifier.padding(end = 16.dp))
             }
         }
 

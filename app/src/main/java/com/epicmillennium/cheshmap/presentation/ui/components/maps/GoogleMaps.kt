@@ -48,7 +48,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.epicmillennium.cheshmap.R
-import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
+import com.epicmillennium.cheshmap.presentation.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
 import com.epicmillennium.cheshmap.presentation.ui.components.onDebounceClick

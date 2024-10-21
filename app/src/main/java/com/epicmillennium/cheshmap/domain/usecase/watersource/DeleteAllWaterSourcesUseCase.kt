@@ -1,4 +1,4 @@
-package com.epicmillennium.cheshmap.domain.usecase
+package com.epicmillennium.cheshmap.domain.usecase.watersource
 
 import com.epicmillennium.cheshmap.domain.marker.WaterSourcesRepository
 

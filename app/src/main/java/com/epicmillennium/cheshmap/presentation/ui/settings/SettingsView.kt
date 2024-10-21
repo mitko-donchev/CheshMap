@@ -60,10 +60,10 @@ import com.composables.core.MenuContent
 import com.composables.core.MenuItem
 import com.composables.core.rememberMenuState
 import com.epicmillennium.cheshmap.R
-import com.epicmillennium.cheshmap.core.ui.theme.AppThemeMode
-import com.epicmillennium.cheshmap.core.ui.theme.CheshMapTheme
-import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
-import com.epicmillennium.cheshmap.core.ui.theme.LocalTheme
+import com.epicmillennium.cheshmap.presentation.theme.AppThemeMode
+import com.epicmillennium.cheshmap.presentation.theme.CheshMapTheme
+import com.epicmillennium.cheshmap.presentation.theme.DarkTheme
+import com.epicmillennium.cheshmap.presentation.theme.LocalTheme
 import kotlinx.coroutines.Job
 
 @OptIn(ExperimentalMaterial3Api::class)

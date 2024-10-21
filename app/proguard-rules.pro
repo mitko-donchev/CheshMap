@@ -22,3 +22,6 @@
 
 -keep class com.epicmillennium.cheshmap.** { *; }
 -keepclassmembers class com.epicmillennium.cheshmap.** { *; }
+
+-if class androidx.credentials.CredentialManager
+-keep class androidx.credentials.playservices.** { *; }

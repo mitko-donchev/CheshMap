@@ -1,4 +1,4 @@
-package com.epicmillennium.cheshmap.core.ui.theme
+package com.epicmillennium.cheshmap.presentation.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

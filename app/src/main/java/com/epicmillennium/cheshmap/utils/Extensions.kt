@@ -17,8 +17,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
-import com.epicmillennium.cheshmap.core.ui.theme.AppThemeMode
-import com.epicmillennium.cheshmap.core.ui.theme.DarkTheme
+import com.epicmillennium.cheshmap.presentation.theme.AppThemeMode
+import com.epicmillennium.cheshmap.presentation.theme.DarkTheme
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream

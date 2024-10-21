@@ -1,4 +1,4 @@
-package com.epicmillennium.cheshmap.core.ui.theme
+package com.epicmillennium.cheshmap.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

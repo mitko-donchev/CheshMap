@@ -1,4 +1,4 @@
-package com.epicmillennium.cheshmap.data.source.room
+package com.epicmillennium.cheshmap.data.source.room.db
 
 import com.epicmillennium.cheshmap.data.repository.watersources.WaterSourcesTable
 import com.epicmillennium.cheshmap.data.source.room.entity.WaterSourceEntity

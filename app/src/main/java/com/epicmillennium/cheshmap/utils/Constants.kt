@@ -20,6 +20,7 @@ object Constants {
     // Firebase
     const val FIRESTORE_COLLECTION_WATER_SOURCES = "water_sources"
     const val FIRESTORE_COLLECTION_SERVER_DATA = "server_data"
+    const val FIRESTORE_COLLECTION_USERS = "users"
 
     // DataStore
     val GLOBAL_THEME_MODE_KEY = intPreferencesKey("global_theme_mode")
