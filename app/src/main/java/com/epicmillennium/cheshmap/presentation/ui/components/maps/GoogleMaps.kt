@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
@@ -45,12 +45,13 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.epicmillennium.cheshmap.R
-import com.epicmillennium.cheshmap.presentation.theme.LocalTheme
 import com.epicmillennium.cheshmap.domain.marker.WaterSource
 import com.epicmillennium.cheshmap.domain.marker.WaterSourceType
+import com.epicmillennium.cheshmap.presentation.theme.LocalTheme
 import com.epicmillennium.cheshmap.presentation.ui.components.onDebounceClick
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleDark
 import com.epicmillennium.cheshmap.utils.Constants.mapStyleLight
@@ -348,25 +349,26 @@ fun CustomRendererClustering(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(color = Color.Blue, shape = CircleShape),
+                    .background(color = MaterialTheme.colorScheme.primary, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = cluster.size.toString(), color = Color.White)
             }
         },
         clusterItemContent = { clusterItem ->
-            Icon(
-                imageVector = Icons.Filled.LocationOn,
+            Image(
+                painter = painterResource(
+                    when (clusterItem.type) {
+                        WaterSourceType.ESTABLISHMENT -> R.drawable.ic_establishment
+                        WaterSourceType.URBAN_WATER -> R.drawable.ic_vik
+                        WaterSourceType.MINERAL_WATER -> R.drawable.ic_mineral_water
+                        WaterSourceType.HOT_MINERAL_WATER -> R.drawable.ic_hot_mineral_water
+                        WaterSourceType.SPRING_WATER -> R.drawable.ic_spring_water
+                        WaterSourceType.NONE -> R.drawable.ic_vik
+                    }
+                ),
                 contentDescription = null,
-                tint = when (clusterItem.type) {
-                    WaterSourceType.ESTABLISHMENT -> Color.Yellow
-                    WaterSourceType.URBAN_WATER -> MaterialTheme.colorScheme.primary
-                    WaterSourceType.MINERAL_WATER -> Color.Green
-                    WaterSourceType.HOT_MINERAL_WATER -> Color.Red
-                    WaterSourceType.SPRING_WATER -> Color.Gray
-                    WaterSourceType.NONE -> Color.Gray
-                },
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(48.dp)
             )
         },
         clusterManager = clusterManager,
